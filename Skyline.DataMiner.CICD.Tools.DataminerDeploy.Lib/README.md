@@ -1,4 +1,4 @@
-# Skyline.DataMiner.CICD.Tools.DataminerDeploy.Lib
+# Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 
 ## About
 

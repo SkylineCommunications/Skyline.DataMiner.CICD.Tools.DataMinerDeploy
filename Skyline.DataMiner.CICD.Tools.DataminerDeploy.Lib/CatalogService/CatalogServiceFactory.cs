@@ -1,4 +1,4 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataminerDeploy.Lib
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
     using System;
     using System.Net.Http;

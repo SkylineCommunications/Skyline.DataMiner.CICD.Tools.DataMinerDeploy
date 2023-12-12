@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Skyline.DataMiner.CICD.Tools.DataminerDeploy.Lib
+namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
 	/// <summary>
 	/// Creates an instance of <see cref="IArtifact" that can be used for deployment to a DataMiner./>

@@ -1,4 +1,4 @@
-# Skyline.DataMiner.CICD.Tools.DataminerDeploy
+# Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 ## About
 
@@ -21,7 +21,7 @@ At Skyline Communications, we deal in world-class solutions that are deployed by
 
 ## Getting Started
 In commandline:
-dotnet tool install -g Skyline.DataMiner.CICD.Tools.DataminerDeploy
+dotnet tool install -g Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 Then run the command
 dataminer-package-deploy help

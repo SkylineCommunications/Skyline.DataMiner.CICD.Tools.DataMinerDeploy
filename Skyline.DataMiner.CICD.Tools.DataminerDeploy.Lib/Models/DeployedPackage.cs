@@ -1,17 +1,13 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataminerDeploy.Lib
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
 	using System;
 
 	public class DeployedPackage
 	{
-		public string ArtifactId { get; }
-		public Guid DeploymentId { get; }
 		public string Status { get; set; }
 
-		public DeployedPackage(string artifactId, Guid deploymentId, string status)
+		public DeployedPackage(string status)
 		{
-			ArtifactId = artifactId;
-			DeploymentId = deploymentId;
 			Status = status;
 		}
 	}

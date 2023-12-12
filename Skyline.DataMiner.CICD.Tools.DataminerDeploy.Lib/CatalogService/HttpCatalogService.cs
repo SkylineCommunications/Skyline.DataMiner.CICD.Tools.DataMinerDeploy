@@ -1,4 +1,4 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataminerDeploy.Lib
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
 	using System;
 	using System.Collections.Generic;
@@ -101,7 +101,7 @@
 			{
 				if (res.Body.TryGetValue(DeploymentInfoKey, out var deploymentInfoModel))
 				{
-					return new DeployedPackage(deploymentInfoModel.ArtifactId, deployingPackage.DeploymentId, deploymentInfoModel.CurrentState);
+					return new DeployedPackage(deploymentInfoModel.CurrentState);
 				}
 				throw new InvalidOperationException("Received an invalid deployment info response");
 			}
@@ -116,6 +116,7 @@
 			{
 				responseContent = await res.Response.Content.ReadAsStringAsync().ConfigureAwait(false);
 			}
+
 			throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
 		}
 

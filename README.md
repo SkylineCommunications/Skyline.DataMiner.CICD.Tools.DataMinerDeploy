@@ -1,4 +1,4 @@
-# Skyline.DataMiner.CICD.Tools.DataminerDeploy
+# Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 ## About
 
@@ -6,7 +6,7 @@ Deploys a package to DataMiner from the catalog or directly.
 
 ## Projects
 
-* For more information about Skyline.DataMiner.CICD.Tools.DataminerDeploy, see [CICD.Tools.DataminerDeploy/README.md](CICD.Tools.DataminerDeploy/README.md).
+* For more information about Skyline.DataMiner.CICD.Tools.DataMinerDeploy, see [CICD.Tools.DataMinerDeploy/README.md](CICD.Tools.DataMinerDeploy/README.md).
 
 ### About DataMiner
 

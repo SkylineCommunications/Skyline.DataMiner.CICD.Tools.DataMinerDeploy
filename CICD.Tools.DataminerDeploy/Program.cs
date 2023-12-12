@@ -1,4 +1,4 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataminerDeploy
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 {
 	using System.CommandLine;
 	using System.Threading.Tasks;
