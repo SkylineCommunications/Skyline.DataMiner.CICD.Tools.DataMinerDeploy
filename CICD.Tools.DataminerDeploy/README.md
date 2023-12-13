@@ -2,7 +2,10 @@
 
 ## About
 
-Deploys a package to DataMiner from the catalog or directly.
+Deploys a package to DataMiner from the cloud or directly from a local artifact.
+
+> **Note**
+> Deployment from the cloud currently only works for private artifacts. Meaning you need to use an agent key of the same organization (admin.dataminer.services) that was used to perform the upload.
 
 ### About DataMiner
 
@@ -25,4 +28,50 @@ dotnet tool install -g Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 Then run the command
 dataminer-package-deploy help
+
+## Deploying from the catalog
+
+Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol) or if you have a DataMiner running as a service(DAAS).
+If you've uploaded it beforehand you only need to artifact id to deploy it to one or more agents of your organization at any time in the future.
+
+### FromCatalog
+The most basic command will allow deployment of an artifact using the artifact identifier returned from performing an upload using ["dataminer-catalog-upload"](https://www.nuget.org/packages/Skyline.DataMiner.CICD.Tools.CatalogUpload).
+
+```console
+dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0" --dmCatalogToken "cloudConnectedToken"
+```
+
+### Authentication and Tokens
+
+You can choose to add the dmcatalogtoken to an environment variable instead and skip having to pass along the secure token.
+```console
+dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
+```
+ 
+ There are 2 options to store the key in an environment variable:
+- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)
+- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)
+
+The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (github, gitlab, azure, ...)
+The second option can be beneficial on a static server such as Jenkins or your local machine (windows only). It adds additional encryption to the environment variable only allowing decryption on the same machine. 
+
+Running as Administrator:
+```console
+dotnet tool install -g Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
+WinEncryptedKeys --name "dmcatalogtoken_encrypted" --value "MyTokenHere"
+```
+
+> **Note**
+> Make sure you close your commandline tool so it clears the history.
+> This only works on windows machines.
+
+You can review and make suggestions to the sourcecode of this encryption tool here: 
+https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
+
+
+## Deploying from a local artifact
+
+Deployment from a local artifact directly to a self-hosted DataMiner is also possible. 
+
+ ### TODO
 

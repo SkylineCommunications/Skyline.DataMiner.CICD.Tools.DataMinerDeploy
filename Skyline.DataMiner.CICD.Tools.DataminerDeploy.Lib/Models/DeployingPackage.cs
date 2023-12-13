@@ -4,13 +4,14 @@
 
 	public class DeployingPackage
 	{
-		public string ArtifactId { get; }
-		public Guid DeploymentId { get; }
-
 		public DeployingPackage(string artifactId, Guid deploymentId)
 		{
 			ArtifactId = artifactId;
 			DeploymentId = deploymentId;
 		}
+
+		public string ArtifactId { get; }
+
+		public Guid DeploymentId { get; }
 	}
 }

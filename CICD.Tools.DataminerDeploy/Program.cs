@@ -1,7 +1,14 @@
 ﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 {
+	using System;
 	using System.CommandLine;
 	using System.Threading.Tasks;
+
+	using Microsoft.Extensions.Logging;
+
+	using Serilog;
+
+	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
 
 	/// <summary>
 	/// Deploys a package to DataMiner from the catalog or directly..
@@ -31,7 +38,7 @@
 
 			var artifactId = new Option<string>(
 			name: "--artifactId",
-			description: "The unique cloud artifact identifier as returned from performing a catalog-upload.")
+			description: "The unique cloud artifact identifier as returned from performing a catalog-upload. e.g. dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0")
 			{
 				IsRequired = true
 			};
@@ -43,17 +50,26 @@
 				IsRequired = false
 			};
 
-			var FromCatalog = new Command("FromCatalogArtifactId", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent.")
+			var deployTimeout = new Option<int>(
+			name: "--deployTimeoutInSeconds",
+			description: "Time-Out time in seconds to wait on successful deployment. This is optional, if not provided this will be 15 minutes. Fill in 0 for infinite.")
+			{
+				IsRequired = false,
+			};
+
+			deployTimeout.SetDefaultValue(-1);
+
+			var FromCatalog = new Command("FromCatalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent. Currently only supports private artifacts uploaded using a key from the organization.")
 			{
 				isDebug,
 				artifactId,
-				dmCatalogToken
+				dmCatalogToken,
+				deployTimeout
 			};
-
 
 			var pathToArtifact = new Option<string>(
 				name: "--pathToArtifact",
-				description: "The path to a .dmapp or .dmprotocol file.")
+				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
 			{
 				IsRequired = true
 			};
@@ -93,8 +109,7 @@
 			rootCommand.Add(FromArtifact);
 			rootCommand.Add(FromCatalog);
 
-
-			FromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken);
+			FromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
 			FromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword);
 
 			// dataminer-package-deploy
@@ -103,14 +118,50 @@
 			return 0;
 		}
 
-		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken)
+		private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword)
 		{
 			//Main Code for program here
 		}
 
-		private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword)
+		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
 		{
-			//Main Code for program here
+			LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+			if (!isDebug)
+			{
+				logConfig.MinimumLevel.Information();
+			}
+			else
+			{
+				logConfig.MinimumLevel.Debug();
+			}
+
+			var seriLog = logConfig.CreateLogger();
+
+			LoggerFactory loggerFactory = new LoggerFactory();
+			loggerFactory.AddSerilog(seriLog);
+
+			var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+
+			IArtifact artifact;
+			if (string.IsNullOrWhiteSpace(dmCatalogToken))
+			{
+				artifact = DeploymentFactory.Cloud(artifactId, logger);
+			}
+			else
+			{
+				artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
+			}
+
+			if (deployTimeout < 0)
+			{
+				deployTimeout = 900; // Default to 15min
+			}
+			else if (deployTimeout == 0)
+			{
+				deployTimeout = int.MaxValue; // MaxValue
+			}
+
+			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
 		}
 	}
 }

@@ -2,11 +2,8 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.IO;
 	using System.Net;
 	using System.Net.Http;
-	using System.Runtime.InteropServices;
-	using System.Security.Authentication;
 	using System.Threading;
 	using System.Threading.Tasks;
 
@@ -19,25 +16,26 @@
 	using Microsoft.Extensions.Logging;
 	using Microsoft.Rest;
 
-	using Newtonsoft.Json;
-
 	internal sealed class HttpCatalogService : ICatalogService, IDisposable
 	{
-		private readonly HttpClient _httpClient;
-		private readonly ILogger _logger;
-		private readonly DeployArtifactAPI _deployArtifactApi;
-		private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi;
 		private const string DeploymentInfoKey = "DeploymentInfo";
+		private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi;
+		private readonly DeployArtifactAPI _deployArtifactApi;
+		private readonly ILogger _logger;
 
 		public HttpCatalogService(HttpClient httpClient, ILogger logger)
 		{
 			_logger = logger;
-			_httpClient = httpClient;
-			_deployArtifactApi = new DeployArtifactAPI(new BasicAuthenticationCredentials(), httpClient, true);
+			_deployArtifactApi = new DeployArtifactAPI(new BasicAuthenticationCredentials(), httpClient, false);
+			_artifactDeploymentInfoApi = new ArtifactDeploymentInfoAPI(new BasicAuthenticationCredentials(), httpClient, false);
+
+			// Need to override this, constructor of generated code uses a localhost address otherwise.
+			_deployArtifactApi.BaseUri = httpClient.BaseAddress;
+			_artifactDeploymentInfoApi.BaseUri = httpClient.BaseAddress;
 		}
 
 		/// <summary>
-		/// Starts the deployment process on a DataMiner Server. You'll need to call 
+		/// Starts the deployment process on a DataMiner Server. You'll need to call
 		/// </summary>
 		/// <param name="artifactIdentifier"></param>
 		/// <param name="key"></param>
@@ -53,6 +51,10 @@
 			{
 				_logger.LogDebug($"Deploying {artifactIdentifier}");
 				res = await _deployArtifactApi.DeployArtifactWithApiKeyFunctionWithHttpMessagesAsync(new DeployArtifactAsSystemForm(artifactIdentifier), key);
+			}
+			catch (HttpOperationException e)
+			{
+				throw new InvalidOperationException($"Azure Artifact Deploy failed with message {e.Response.Content}", e);
 			}
 			catch (Exception e)
 			{
@@ -83,6 +85,12 @@
 			throw new InvalidOperationException($"The deploy API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
 		}
 
+		public void Dispose()
+		{
+			_artifactDeploymentInfoApi.Dispose();
+			_deployArtifactApi.Dispose();
+		}
+
 		public async Task<DeployedPackage> GetDeployedPackageAsync(DeployingPackage deployingPackage, string key)
 		{
 			HttpOperationResponse<IDictionary<string, DeploymentInfoModel>> res;
@@ -91,6 +99,10 @@
 			{
 				_logger.LogDebug($"Checking Deployment Status...");
 				res = await _artifactDeploymentInfoApi.GetPrivateArtifactDeploymentInfoWithHttpMessagesAsync(deployingPackage.DeploymentId, key);
+			}
+			catch (HttpOperationException e)
+			{
+				throw new InvalidOperationException($"Azure Artifact Deploy Check Status failed with message {e.Response.Content}", e);
 			}
 			catch (Exception e)
 			{
@@ -118,12 +130,6 @@
 			}
 
 			throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
-		}
-
-
-		public void Dispose()
-		{
-			_deployArtifactApi.Dispose();
 		}
 	}
 }

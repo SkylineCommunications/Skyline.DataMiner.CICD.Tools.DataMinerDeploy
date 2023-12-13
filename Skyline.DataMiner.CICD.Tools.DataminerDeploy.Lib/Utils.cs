@@ -1,7 +1,7 @@
 ﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
-	using System.Threading.Tasks;
 	using System;
+	using System.Threading.Tasks;
 
 	internal static class Utils
 	{
