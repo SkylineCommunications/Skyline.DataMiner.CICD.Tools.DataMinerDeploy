@@ -53,8 +53,7 @@
 			var actualUser = dataminerUser ?? userFromEnv;
 			var actualPassword = dataminerPassword ?? userFromEnv;
 
-			// TODO CHANGE THIS TO MAKE USE OF PROVIDED SERVICE. Also maybe change the name to get rid of the stigma on the word 'remoting'
-			using (RemotingDataMinerService packageUploader = new RemotingDataMinerService(dataMinerServerLocation, actualUser, actualPassword, pathToArtifact))
+			using (DataMinerService packageUploader = new DataMinerService(dataMinerServerLocation, actualUser, actualPassword, pathToArtifact))
 			{
 				if (newStyle)
 				{
