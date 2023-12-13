@@ -32,7 +32,8 @@ dataminer-package-deploy help
 ## Deploying from the catalog
 
 Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol) or if you have a DataMiner running as a service(DAAS).
-If you've uploaded it beforehand you only need to artifact id to deploy it to one or more agents of your organization at any time in the future.
+
+If you've uploaded an artifact beforehand you only need to artifact id to deploy it to one or more agents of your organization at any time in the future.
 
 ### FromCatalog
 The most basic command will allow deployment of an artifact using the artifact identifier returned from performing an upload using ["dataminer-catalog-upload"](https://www.nuget.org/packages/Skyline.DataMiner.CICD.Tools.CatalogUpload).
@@ -73,5 +74,12 @@ https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncrypt
 
 Deployment from a local artifact directly to a self-hosted DataMiner is also possible. 
 
- ### TODO
+This can be useful when there are self-hosted static staging and production systems on a local network that are not internet accessible.
 
+ ### FromArtifact
+
+ The most basic command will allow deployment of an artifact using the path to the artifact and a local DataMiner user name and password.
+
+```console
+dataminer-package-deploy FromArtifact --pathToArtifact "" --dmServerLocation "" --dmUser "" --dmPassword ""
+```
