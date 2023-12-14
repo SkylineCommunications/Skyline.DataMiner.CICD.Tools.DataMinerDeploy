@@ -39,18 +39,18 @@
 		/// </summary>
 		/// <param name="artifactIdentifier"></param>
 		/// <param name="key"></param>
-		/// <param name="cancellation"></param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException"></exception>
 		/// <exception cref="UnauthorizedAccessException"></exception>
-		public async Task<DeployingPackage> DeployPackageAsync(string artifactIdentifier, string key, CancellationToken cancellation)
+		public async Task<DeployingPackage> DeployPackageAsync(string artifactIdentifier, string key, CancellationToken cancellationToken)
 		{
 			HttpOperationResponse<DeploymentModel> res;
 
 			try
 			{
 				_logger.LogDebug($"Deploying {artifactIdentifier}");
-				res = await _deployArtifactApi.DeployArtifactWithApiKeyFunctionWithHttpMessagesAsync(new DeployArtifactAsSystemForm(artifactIdentifier), key);
+				res = await _deployArtifactApi.DeployArtifactWithApiKeyFunctionWithHttpMessagesAsync(new DeployArtifactAsSystemForm(artifactIdentifier), key, null, cancellationToken);
 			}
 			catch (HttpOperationException e)
 			{
@@ -68,6 +68,7 @@
 					_logger.LogDebug($"Deployment {deploymentId} started...");
 					return new DeployingPackage(artifactIdentifier, deploymentId);
 				}
+
 				throw new InvalidOperationException("Received an invalid deployment ID");
 			}
 
@@ -115,6 +116,7 @@
 				{
 					return new DeployedPackage(deploymentInfoModel.CurrentState);
 				}
+
 				throw new InvalidOperationException("Received an invalid deployment info response");
 			}
 
