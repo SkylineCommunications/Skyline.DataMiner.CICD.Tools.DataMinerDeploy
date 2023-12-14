@@ -40,7 +40,7 @@
 			TryFindEnvironmentKey();
 			if (String.IsNullOrWhiteSpace(keyFromEnv))
 			{
-				throw new InvalidOperationException("Deployment failed, missing token in environment variable dmcatalogtoken or dmcatalogtoken_encrypted. Either add that, or use the provided catalogAgentToken argument.");
+				throw new InvalidOperationException("Deployment failed, missing token in environment variable DATAMINER_CATALOG_TOKEN or DATAMINER_CATALOG_TOKEN_ENCRYPTED. Either add that, or use the provided catalogAgentToken argument.");
 			}
 
 			catalogAgentToken = keyFromEnv;
@@ -116,8 +116,8 @@
 
 		/// <summary>
 		///  Attempts to find the necessary API key in Environment Variables. In order of priority:
-		///  <para>- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)</para>
-		///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)</para>
+		///  <para>- key stored as an Environment Variable called "DATAMINER_CATALOG_TOKEN". (unix/win)</para>
+		///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_CATALOG_TOKEN_ENCRYPTED" (windows only)</para>
 		/// </summary>
 		private void TryFindEnvironmentKey()
 		{
@@ -125,15 +125,17 @@
 			{
 				try
 				{
-					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("dmcatalogtoken_encrypted");
+					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("DATAMINER_CATALOG_TOKEN_ENCRYPTED");
 					if (encryptedKey != null)
 					{
 						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
 
 						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
 						{
-							_logger.LogDebug("OK: Found token in Env Variable: 'dmcatalogtoken_encrypted' created by WinEncryptedKeys.");
+							_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' created by WinEncryptedKeys.");
 							keyFromEnv = keyFromWinEncryptedKeys;
+
+							// Do not return. keyFromEnv Can be overwritten by the presence of DATAMINER_CATALOG_TOKEN
 						}
 					}
 				}
@@ -143,22 +145,17 @@
 				}
 			}
 
-			//var config = new ConfigurationBuilder()
-			//	.AddUserSecrets<CatalogArtifact>()
-			//	.Build();
-			//string keyFromEnvironment = config["dmcatalogtoken"];
-
-			string keyFromEnvironment = Environment.GetEnvironmentVariable("dmcatalogtoken");
+			string keyFromEnvironment = Environment.GetEnvironmentVariable("DATAMINER_CATALOG_TOKEN");
 
 			if (!String.IsNullOrWhiteSpace(keyFromEnvironment))
 			{
 				if (!String.IsNullOrWhiteSpace(keyFromEnv))
 				{
-					_logger.LogDebug("OK: Overriding 'dmcatalogtoken_encrypted' with found token in Env Variable: 'dmcatalogtoken'.");
+					_logger.LogDebug("OK: Overriding 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' with found token in Env Variable: 'DATAMINER_CATALOG_TOKEN'.");
 				}
 				else
 				{
-					_logger.LogDebug("OK: Found token in Env Variable: 'dmcatalogtoken'.");
+					_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_CATALOG_TOKEN'.");
 				}
 
 				keyFromEnv = keyFromEnvironment;

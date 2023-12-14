@@ -42,18 +42,18 @@
 			ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 			logger = loggerFactory.CreateLogger("TestLogger");
 
-			originalKey_encrypt = Environment.GetEnvironmentVariable("dmcatalogtoken_encrypted", EnvironmentVariableTarget.Machine) ?? "";
-			originalKey = Environment.GetEnvironmentVariable("dmcatalogtoken") ?? "";
+			originalKey_encrypt = Environment.GetEnvironmentVariable("DATAMINER_CATALOG_TOKEN_ENCRYPTED", EnvironmentVariableTarget.Machine) ?? "";
+			originalKey = Environment.GetEnvironmentVariable("DATAMINER_CATALOG_TOKEN") ?? "";
 
-			Environment.SetEnvironmentVariable("dmcatalogtoken", "");
-			Environment.SetEnvironmentVariable("dmcatalogtoken_encrypted", "", EnvironmentVariableTarget.Machine);
+			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN", "");
+			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN_ENCRYPTED", "", EnvironmentVariableTarget.Machine);
 		}
 
 		[TestCleanup()]
 		public void Cleanup()
 		{
-			Environment.SetEnvironmentVariable("dmcatalogtoken_encrypted", originalKey_encrypt, EnvironmentVariableTarget.Machine);
-			Environment.SetEnvironmentVariable("dmcatalogtoken", originalKey);
+			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN_ENCRYPTED", originalKey_encrypt, EnvironmentVariableTarget.Machine);
+			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN", originalKey);
 		}
 
 		[TestMethod()]
@@ -127,7 +127,7 @@
 			string fakeCatalogId = "fakeId";
 			string fakeToken = "agentToken";
 
-			Environment.SetEnvironmentVariable("dmcatalogtoken", fakeToken);
+			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN", fakeToken);
 
 			Guid guid = Guid.NewGuid();
 			var deployingPackage = new DeployingPackage("fakeId", guid);
@@ -153,7 +153,7 @@
 			string fakeCatalogId = "fakeId";
 			string fakeToken = "agentToken";
 
-			WinEncryptedKeys.Lib.Keys.SetKey("dmcatalogtoken_encrypted", fakeToken);
+			WinEncryptedKeys.Lib.Keys.SetKey("DATAMINER_CATALOG_TOKEN_ENCRYPTED", fakeToken);
 
 			Guid guid = Guid.NewGuid();
 			var deployingPackage = new DeployingPackage("fakeId", guid);

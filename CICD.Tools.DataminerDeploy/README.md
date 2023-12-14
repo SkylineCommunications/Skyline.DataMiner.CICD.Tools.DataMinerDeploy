@@ -44,14 +44,14 @@ dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9
 
 ### Authentication and Tokens
 
-You can choose to add the dmcatalogtoken to an environment variable instead and skip having to pass along the secure token.
+You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the secure token.
 ```console
 dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
 ```
  
  There are 2 options to store the key in an environment variable:
-- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)
-- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)
+- key stored as an Environment Variable called "DATAMINER_CATALOG_TOKEN". (unix/win)
+- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_CATALOG_TOKEN_ENCRYPTED" (windows only)
 
 The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (github, gitlab, azure, ...)
 The second option can be beneficial on a static server such as Jenkins or your local machine (windows only). It adds additional encryption to the environment variable only allowing decryption on the same machine. 
@@ -59,7 +59,7 @@ The second option can be beneficial on a static server such as Jenkins or your l
 Running as Administrator:
 ```console
 dotnet tool install -g Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
-WinEncryptedKeys --name "dmcatalogtoken_encrypted" --value "MyTokenHere"
+WinEncryptedKeys --name "DATAMINER_CATALOG_TOKEN_ENCRYPTED" --value "MyTokenHere"
 ```
 
 > **Note**

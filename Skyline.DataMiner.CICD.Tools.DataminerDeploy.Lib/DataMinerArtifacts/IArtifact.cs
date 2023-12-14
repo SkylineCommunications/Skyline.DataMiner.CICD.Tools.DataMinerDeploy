@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
+	using System;
+	using System.Threading.Tasks;
+
 	/// <summary>
 	/// Represents an artifact you wish to deploy to a DataMiner system.
 	/// </summary>

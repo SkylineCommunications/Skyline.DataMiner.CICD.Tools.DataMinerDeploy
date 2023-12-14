@@ -45,7 +45,7 @@
 
 			var dmCatalogToken = new Option<string>(
 			name: "--dmCatalogToken",
-			description: "The key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services. This is optional if the key can also be provided using the 'dmcatalogtoken' environment variable (unix/win) or using 'dmcatalogtoken_encrypted' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
+			description: "The key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services. This is optional if the key can also be provided using the 'DATAMINER_CATALOG_TOKEN' environment variable (unix/win) or using 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
 			{
 				IsRequired = false
 			};
@@ -59,7 +59,7 @@
 
 			deployTimeout.SetDefaultValue(-1);
 
-			var FromCatalog = new Command("FromCatalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent. Currently only supports private artifacts uploaded using a key from the organization.")
+			var fromCatalog = new Command("FromCatalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent. Currently only supports private artifacts uploaded using a key from the organization.")
 			{
 				isDebug,
 				artifactId,
@@ -95,7 +95,7 @@
 				IsRequired = true
 			};
 
-			var FromArtifact = new Command("FromArtifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
+			var fromArtifact = new Command("FromArtifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
 			{
 				isDebug,
 				pathToArtifact,
@@ -106,11 +106,11 @@
 
 			// Optionally can add add extra subcommands later to deploy from different locations to DataMiner.
 
-			rootCommand.Add(FromArtifact);
-			rootCommand.Add(FromCatalog);
+			rootCommand.Add(fromArtifact);
+			rootCommand.Add(fromCatalog);
 
-			FromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
-			FromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword);
+			fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
+			fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword);
 
 			// dataminer-package-deploy
 			await rootCommand.InvokeAsync(args);
