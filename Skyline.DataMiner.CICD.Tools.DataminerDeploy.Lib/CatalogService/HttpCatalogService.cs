@@ -125,7 +125,7 @@
 				throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}");
 			}
 
-			var responseContent = string.Empty;
+			var responseContent = String.Empty;
 			if (res.Response.Content != null)
 			{
 				responseContent = await res.Response.Content.ReadAsStringAsync().ConfigureAwait(false);
