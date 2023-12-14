@@ -143,7 +143,7 @@
 			var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
 
 			IArtifact artifact;
-			if (string.IsNullOrWhiteSpace(dmCatalogToken))
+			if (String.IsNullOrWhiteSpace(dmCatalogToken))
 			{
 				artifact = DeploymentFactory.Cloud(artifactId, logger);
 			}
@@ -158,7 +158,7 @@
 			}
 			else if (deployTimeout == 0)
 			{
-				deployTimeout = int.MaxValue; // MaxValue
+				deployTimeout = Int32.MaxValue; // MaxValue
 			}
 
 			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
