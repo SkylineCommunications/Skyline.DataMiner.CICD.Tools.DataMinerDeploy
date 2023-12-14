@@ -7,9 +7,8 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</AssemblyName>
-		<PackageVersion>1.0.1</PackageVersion>
-		<Version>1.0.1</Version>
-		<PackageTags>Skyline;DataMiner</PackageTags>
+		<RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</RootNamespace>
+		<PackageTags>Skyline;DataMiner;CICD</PackageTags>
 		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
