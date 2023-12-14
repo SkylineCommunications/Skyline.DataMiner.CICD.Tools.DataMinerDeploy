@@ -57,5 +57,35 @@
 		{
 			return new CatalogArtifact(service, artifactIdentifier, logger);
 		}
+
+		/// <summary>
+		/// A deployment using a local package to a local network connected DataMiner agent.
+		/// </summary>
+		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
+		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
+		/// <param name="dataminerUser">The dataminer User to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
+		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
+		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
+		public static IArtifact Local(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
+		{
+			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
+		}
+
+		/// <summary>
+		/// A deployment using a local package to a local network connected DataMiner agent.
+		/// </summary>
+		/// <param name="dmService">An instance of <see cref="IDataMinerService"/> used for direct communication with a DataMiner.</param>
+		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
+		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
+		/// <param name="dataminerUser">The dataminer User to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
+		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
+		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
+		public static IArtifact Local(IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation = "", string dataminerUser = "", string dataminerPassword = "")
+		{
+			// TODO CHANGE THIS TO MAKE USE OF THE DATA INJECTED SERVICE
+			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
+		}
 	}
 }
