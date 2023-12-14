@@ -143,7 +143,7 @@
 			var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
 
 			IArtifact artifact;
-			if (string.IsNullOrWhiteSpace(dmCatalogToken))
+			if (String.IsNullOrWhiteSpace(dmCatalogToken))
 			{
 				artifact = DeploymentFactory.Cloud(artifactId, logger);
 			}
