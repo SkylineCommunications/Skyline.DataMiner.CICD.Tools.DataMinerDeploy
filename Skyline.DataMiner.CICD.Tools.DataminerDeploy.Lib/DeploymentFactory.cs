@@ -84,8 +84,7 @@
 		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
 		public static IArtifact Local(IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation = "", string dataminerUser = "", string dataminerPassword = "")
 		{
-			// TODO CHANGE THIS TO MAKE USE OF THE DATA INJECTED SERVICE
-			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
+			return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
 		}
 	}
 }
