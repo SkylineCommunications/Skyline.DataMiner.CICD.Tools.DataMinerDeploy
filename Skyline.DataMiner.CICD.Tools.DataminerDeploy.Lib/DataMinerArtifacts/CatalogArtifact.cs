@@ -128,7 +128,7 @@
 					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("dmcatalogtoken_encrypted");
 					if (encryptedKey != null)
 					{
-						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
+						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(String.Empty, encryptedKey).Password;
 
 						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
 						{
