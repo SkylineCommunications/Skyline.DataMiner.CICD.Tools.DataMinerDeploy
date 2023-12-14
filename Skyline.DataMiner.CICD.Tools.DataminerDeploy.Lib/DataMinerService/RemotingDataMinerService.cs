@@ -12,29 +12,34 @@
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.RemotingConnection;
 	using Skyline.DataMiner.Net.AppPackages;
 
-	internal class DataMinerService : IDisposable, IDataMinerService
+	internal class RemotingDataMinerService : IDisposable, IDataMinerService
 	{
-		private readonly string dma_ip;
-		private readonly string dma_user;
-		private readonly string dma_password;
-		private readonly RemoteSLNetConnection slnet;
+		private SLNetCommunication slnet;
 
 		private readonly string dmaDllsFilesLocations;
 
-		public DataMinerService(string dmaIp, string dmaUser, string dmaPass, string dmaDllsFilesLocations)
+		public RemotingDataMinerService(string dmaDllsFilesLocations)
 		{
 			this.dmaDllsFilesLocations = dmaDllsFilesLocations;
-			dma_ip = dmaIp;
-			dma_user = dmaUser;
-			dma_password = dmaPass;
 
 			var currentDomain = AppDomain.CurrentDomain;
 			currentDomain.AssemblyResolve += new ResolveEventHandler(MyResolveEventHandler);
+		}
 
-			slnet = RemoteSLNetConnection.GetConnection(dma_ip, dma_user, dma_password);
-			slnet.Connection.PollingRequestTimeout = 120000;
-			slnet.Connection.ConnectTimeoutTime = 120000;
-			slnet.Connection.AuthenticateMessageTimeout = 120000;
+		public bool TryConnect(string dmaIp, string dmaUser, string dmaPass)
+		{
+			if (slnet == null)
+			{
+				slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
+				slnet.Connection.PollingRequestTimeout = 120000;
+				slnet.Connection.ConnectTimeoutTime = 120000;
+				slnet.Connection.AuthenticateMessageTimeout = 120000;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		private Assembly MyResolveEventHandler(object sender, ResolveEventArgs args)

@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Linq;
+	using System.Runtime;
 	using System.Threading;
 
 	internal enum AlarmLevel
@@ -12,39 +13,43 @@
 		Warning,
 		Normal
 	}
-	internal sealed class RemoteSLNetConnection : IDisposable
+	internal sealed class SLNetCommunication : IDisposable
 	{
-		private readonly Skyline.DataMiner.Net.RemotingConnection _connection;
-		private RemoteSLNetConnection(string endUrlPoint, string username, string password)
+		private readonly Skyline.DataMiner.Net.Connection _connection;
+
+		private SLNetCommunication(string endUrlPoint, string username, string password)
 		{
-			Skyline.DataMiner.Net.RemotingConnection.RegisterChannel();
-			_connection = new Skyline.DataMiner.Net.RemotingConnection(endUrlPoint);
+			// Doing this to support some older DataMiner versions.
+			Net.RemotingConnection.RegisterChannel();
+			_connection = Skyline.DataMiner.Net.ConnectionSettings.GetConnection(endUrlPoint);
+			// _connection.ClientApplicationName = "VSTEST.CONSOLE.EXE"; <-- TODO: check if we need this still?
+
 			_connection.Authenticate(username, password);
+			_connection.Subscribe(new Skyline.DataMiner.Net.SubscriptionFilter());
 
 			this.EndPoint = endUrlPoint;
-			Connection.Subscribe(new Skyline.DataMiner.Net.SubscriptionFilter());
 		}
 
-		public Skyline.DataMiner.Net.RemotingConnection Connection
+		public Skyline.DataMiner.Net.Connection Connection
 		{
 			get { return _connection; }
 		}
 
 		public string EndPoint { get; private set; }
 
-		public static RemoteSLNetConnection GetConnection(string endUrlPoint, string username, string password)
+		public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password)
 		{
-			return new RemoteSLNetConnection(endUrlPoint, username, password);
+			return new SLNetCommunication(endUrlPoint, username, password);
 		}
 
-		public static RemoteSLNetConnection GetConnection(string endUrlPoint, string username, string password, int retryInterval, int retries)
+		public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password, int retryInterval, int retries)
 		{
 			int i = 0;
 			while (true)
 			{
 				try
 				{
-					RemoteSLNetConnection connection = new RemoteSLNetConnection(endUrlPoint, username, password);
+					SLNetCommunication connection = new SLNetCommunication(endUrlPoint, username, password);
 					return connection;
 				}
 				catch (Exception e)
