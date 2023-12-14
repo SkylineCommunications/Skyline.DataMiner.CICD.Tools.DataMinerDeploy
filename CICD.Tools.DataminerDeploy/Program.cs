@@ -73,25 +73,96 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 				deployTimeout
 			};
 
-			// Optionally can add add extra subcommands later to deploy from different sources to DataMiner.
+			var pathToArtifact = new Option<string>(
+				name: "--pathToArtifact",
+				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
+			{
+				IsRequired = true
+			};
+
+			var dataMinerServerLocation = new Option<string>(
+			name: "--dmServerLocation",
+			description: "The IP or host name of a DataMiner agent.")
+			{
+				IsRequired = true
+			};
+
+			var dataminerUser = new Option<string>(
+			name: "--dmUser",
+			description: "The dataminer User to setup a direct connection to an accessible agent.")
+			{
+				IsRequired = true
+			};
+
+			var dataminerPassword = new Option<string>(
+			name: "--dmPassword",
+			description: "The password to setup a direct connection to an accessible agent.")
+			{
+				IsRequired = true
+			};
+
+			var fromArtifact = new Command("FromArtifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
+			{
+				isDebug,
+				pathToArtifact,
+				dataMinerServerLocation,
+				dataminerUser,
+				dataminerPassword,
+				deployTimeout
+			};
+
+			// Optionally can add add extra subcommands later to deploy from different locations to DataMiner.
+
+			rootCommand.Add(fromArtifact);
 			rootCommand.Add(fromCatalog);
 
 			fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
+			fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
 
 			// dataminer-package-deploy
 			return await rootCommand.InvokeAsync(args);
 		}
 
-		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
+		private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
 		{
-			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
-			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
-			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
+			LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+			if (!isDebug)
+			{
+				logConfig.MinimumLevel.Information();
+			}
+			else
+			{
+				logConfig.MinimumLevel.Debug();
+			}
 
+			var seriLog = logConfig.CreateLogger();
 
-			artifactId = ExtractArtifactId(artifactId);
+			LoggerFactory loggerFactory = new LoggerFactory();
+			loggerFactory.AddSerilog(seriLog);
 
-			try
+			var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+
+			IArtifact artifact;
+			if (String.IsNullOrWhiteSpace(dataminerPassword))
+			{
+				artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation);
+			}
+			else
+			{
+				artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation, dataminerUser, dataminerPassword);
+			}
+
+			if (deployTimeout < 0)
+			{
+				deployTimeout = 900; // Default to 15min
+			}
+			else if (deployTimeout == 0)
+			{
+				deployTimeout = Int32.MaxValue; // MaxValue
+			}
+
+			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
+		}
 
 			{
 				LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();

@@ -2,6 +2,8 @@
 {
 	using Microsoft.Extensions.Logging;
 
+	using Skyline.DataMiner.CICD.FileSystem;
+
 	/// <summary>
 	/// Creates an instance of <see cref="IArtifact"></see> that can be used for deployment to a DataMiner.
 	/// </summary>
@@ -67,9 +69,9 @@
 		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
 		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
 		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-		public static IArtifact Local(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
+		public static IArtifact Local(IFileSystem fs, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataminerUser = "", string dataminerPassword = "")
 		{
-			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
+			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger, fs);
 		}
 
 		/// <summary>
@@ -82,9 +84,9 @@
 		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
 		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
 		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-		public static IArtifact Local(IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation = "", string dataminerUser = "", string dataminerPassword = "")
+		public static IArtifact Local(IFileSystem fs, IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataminerUser = "", string dataminerPassword = "")
 		{
-			return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger);
+			return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger, fs);
 		}
 	}
 }

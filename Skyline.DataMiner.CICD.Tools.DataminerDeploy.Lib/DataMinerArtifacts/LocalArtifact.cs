@@ -3,8 +3,13 @@
 	using System;
 	using System.Runtime.InteropServices;
 	using System.Threading.Tasks;
+	using Skyline.DataMiner.CICD.FileSystem;
 
 	using Microsoft.Extensions.Logging;
+	using System.IO.Compression;
+	using System.IO;
+	using System.Net.Mime;
+	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts;
 
 	internal class LocalArtifact : IArtifact
 	{
@@ -15,29 +20,39 @@
 		private readonly string pathToArtifact;
 		private string userFromEnv;
 		private string pwFromEnv;
-		IDataMinerService service;
+		private readonly IDataMinerService service;
+		private readonly IFileSystem fs;
 
-
-		public LocalArtifact(IDataMinerService dataminerService, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
+		public LocalArtifact(IDataMinerService dataminerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
 		{
+			if (String.IsNullOrWhiteSpace(pathToArtifact))
+			{
+				throw new ArgumentNullException(nameof(pathToArtifact));
+			}
+
+			if (dataminerService == null)
+			{
+				throw new ArgumentNullException(nameof(dataminerService));
+			}
+			this.fs = fs;
 			this.service = dataminerService;
 			this.pathToArtifact = pathToArtifact;
 			this.dataMinerServerLocation = dataMinerServerLocation;
-			this.dataminerUser = dataminerUser;
-			this.dataminerPassword = dataminerPassword;
+			this.dataminerUser = dataMinerUser;
+			this.dataminerPassword = dataMinerPassword;
 			this._logger = logger;
 			TryFindEnvironmentKeys();
 		}
 
-		public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, ILogger logger) : this(dataMinerService, pathToArtifact, dataMinerServerLocation, null, null, logger)
+		public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, ILogger logger, IFileSystem fs) : this(dataMinerService, pathToArtifact, dataMinerServerLocation, null, null, logger, fs)
 		{
 		}
 
-		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger) : this(new SLNetDataMinerService("TODO"), pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger)
+		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs) : this(new SLNetDataMinerService(fs, logger), pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs)
 		{
 		}
 
-		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, ILogger logger) : this(pathToArtifact, dataMinerServerLocation, null, null, logger)
+		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, ILogger logger, IFileSystem fs) : this(pathToArtifact, dataMinerServerLocation, null, null, logger, fs)
 		{
 		}
 
@@ -48,20 +63,29 @@
 
 		public async Task<bool> DeployAsync(TimeSpan timeout)
 		{
+			if (!fs.File.Exists(pathToArtifact))
+			{
+				throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
+			}
+
 			var actualUser = dataminerUser ?? userFromEnv;
 			var actualPassword = dataminerPassword ?? userFromEnv;
 			service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
+			ArtifactType type = new ArtifactType(pathToArtifact);
 
-			// TODO Need to check if the package is legacy or not
-			bool newStyle = true;
-
-			if (newStyle)
+			switch (type.Value)
 			{
-				service.InstallNewStyleAppPackages(pathToArtifact);
-			}
-			else
-			{
-				service.InstallOldStyleAppPackages(pathToArtifact);
+				case ArtifactTypeEnum.dmapp:
+					service.InstallNewStyleAppPackages(pathToArtifact);
+					break;
+				case ArtifactTypeEnum.legacyDmapp:
+					service.InstallOldStyleAppPackages(pathToArtifact);
+					break;
+				case ArtifactTypeEnum.dmprotocol:
+					service.InstallDataminerProtocol(pathToArtifact);
+					break;
+				default:
+					break;
 			}
 
 			return true;
