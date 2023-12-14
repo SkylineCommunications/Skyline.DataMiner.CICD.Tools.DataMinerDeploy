@@ -33,7 +33,7 @@
 		{
 		}
 
-		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
+		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger) : this(new SLNetDataMinerService("TODO"), pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger)
 		{
 		}
 
