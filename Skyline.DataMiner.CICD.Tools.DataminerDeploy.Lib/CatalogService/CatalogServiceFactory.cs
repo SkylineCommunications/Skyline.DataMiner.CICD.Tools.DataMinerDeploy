@@ -32,7 +32,7 @@
 				apiBaseUrl = "https://api.dataminer.services/api";
 			}
 
-			httpClient.BaseAddress = new Uri($"{apiBaseUrl}");
+			httpClient.BaseAddress = new Uri(apiBaseUrl);
 			return new HttpCatalogService(httpClient, logger);
 		}
 	}
