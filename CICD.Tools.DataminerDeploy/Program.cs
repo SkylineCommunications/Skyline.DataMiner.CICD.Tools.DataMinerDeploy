@@ -158,7 +158,7 @@
 			}
 			else if (deployTimeout == 0)
 			{
-				deployTimeout = int.MaxValue; // MaxValue
+				deployTimeout = Int32.MaxValue; // MaxValue
 			}
 
 			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
