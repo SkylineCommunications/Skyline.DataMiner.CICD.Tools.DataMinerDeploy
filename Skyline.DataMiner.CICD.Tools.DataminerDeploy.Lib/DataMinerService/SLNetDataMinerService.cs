@@ -12,13 +12,13 @@
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.RemotingConnection;
 	using Skyline.DataMiner.Net.AppPackages;
 
-	internal class RemotingDataMinerService : IDisposable, IDataMinerService
+	internal class SLNetDataMinerService : IDisposable, IDataMinerService
 	{
 		private SLNetCommunication slnet;
 
 		private readonly string dmaDllsFilesLocations;
 
-		public RemotingDataMinerService(string dmaDllsFilesLocations)
+		public SLNetDataMinerService(string dmaDllsFilesLocations)
 		{
 			this.dmaDllsFilesLocations = dmaDllsFilesLocations;
 
@@ -174,7 +174,12 @@
 
 		public void InstallNewStyleAppPackages(string packageFilePath)
 		{
-			var helper = new AppPackageHelper(slnet.SendMessage);
+			if (slnet == null)
+			{
+				throw new InvalidOperationException("Please call .Connect before installing any packages.");
+			}
+
+				var helper = new AppPackageHelper(slnet.SendMessage);
 			var allPackages = helper.GetUploadedAppPackages();
 			(string appName, string appVersion, int appBuild) = LoadAppPackage(packageFilePath);
 			CleanPreviousUploaded(helper, appName, appVersion, appBuild);
@@ -185,6 +190,12 @@
 
 		public void InstallOldStyleAppPackages(string package)
 		{
+			if (slnet == null)
+			{
+				throw new InvalidOperationException("Please call .Connect before installing any packages.");
+			}
+
+
 			using (var manager = new Skyline.DataMiner.Net.Upgrade.UpgradeExecuteManager())
 			{
 				// Path			

@@ -4,5 +4,6 @@
 	{
 		void InstallNewStyleAppPackages(string packageFilePath);
 		void InstallOldStyleAppPackages(string package);
+		bool TryConnect(string dmaIp, string dmaUser, string dmaPass);
 	}
 }

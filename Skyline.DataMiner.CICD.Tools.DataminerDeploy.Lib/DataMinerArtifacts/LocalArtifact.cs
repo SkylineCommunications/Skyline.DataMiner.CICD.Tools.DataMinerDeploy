@@ -20,6 +20,7 @@
 
 		public LocalArtifact(IDataMinerService dataminerService, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
 		{
+			this.service = dataminerService;
 			this.pathToArtifact = pathToArtifact;
 			this.dataMinerServerLocation = dataMinerServerLocation;
 			this.dataminerUser = dataminerUser;
@@ -32,7 +33,7 @@
 		{
 		}
 
-		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger)
+		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, ILogger logger) : this(new SLNetDataMinerService("TODO"), pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger)
 		{
 		}
 
@@ -45,28 +46,25 @@
 			throw new NotImplementedException();
 		}
 
-		public Task<bool> DeployAsync(TimeSpan timeout)
+		public async Task<bool> DeployAsync(TimeSpan timeout)
 		{
+			var actualUser = dataminerUser ?? userFromEnv;
+			var actualPassword = dataminerPassword ?? userFromEnv;
+			service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
+
 			// TODO Need to check if the package is legacy or not
 			bool newStyle = true;
 
-			var actualUser = dataminerUser ?? userFromEnv;
-			var actualPassword = dataminerPassword ?? userFromEnv;
-
-			// TODO CHANGE THIS TO MAKE USE OF PROVIDED SERVICE. Also maybe change the name to get rid of the stigma on the word 'remoting'
-			using (RemotingDataMinerService packageUploader = new RemotingDataMinerService(dataMinerServerLocation, actualUser, actualPassword, pathToArtifact))
+			if (newStyle)
 			{
-				if (newStyle)
-				{
-					packageUploader.InstallNewStyleAppPackages(pathToArtifact);
-				}
-				else
-				{
-					packageUploader.InstallOldStyleAppPackages(pathToArtifact);
-				}
+				service.InstallNewStyleAppPackages(pathToArtifact);
+			}
+			else
+			{
+				service.InstallOldStyleAppPackages(pathToArtifact);
 			}
 
-			throw new NotImplementedException();
+			return true;
 		}
 
 		/// <summary>
