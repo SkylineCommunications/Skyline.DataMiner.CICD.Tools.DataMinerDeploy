@@ -39,14 +39,14 @@ If you've uploaded an artifact beforehand you only need to artifact id to deploy
 The most basic command will allow deployment of an artifact using the artifact identifier returned from performing an upload using ["dataminer-catalog-upload"](https://www.nuget.org/packages/Skyline.DataMiner.CICD.Tools.CatalogUpload).
 
 ```console
-dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0" --dmCatalogToken "cloudConnectedToken"
+dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0" --dm-catalog-token "cloudConnectedToken"
 ```
 
 ### Authentication and Tokens
 
 You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the secure token.
 ```console
-dataminer-package-deploy FromCatalog --artifactId "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
+dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
 ```
  
  There are 2 options to store the key in an environment variable:
@@ -81,5 +81,5 @@ This can be useful when there are self-hosted static staging and production syst
  The most basic command will allow deployment of an artifact using the path to the artifact and a local DataMiner user name and password.
 
 ```console
-dataminer-package-deploy FromArtifact --pathToArtifact "" --dmServerLocation "" --dmUser "" --dmPassword ""
+dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location "" --dm-user "" --dm-password ""
 ```

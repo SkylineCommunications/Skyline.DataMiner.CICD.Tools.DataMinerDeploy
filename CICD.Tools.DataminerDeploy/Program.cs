@@ -37,21 +37,21 @@
 			rootCommand.AddGlobalOption(isDebug);
 
 			var artifactId = new Option<string>(
-			name: "--artifactId",
+			name: "--artifact-id",
 			description: "The unique cloud artifact identifier as returned from performing a catalog-upload. e.g. dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0")
 			{
 				IsRequired = true
 			};
 
 			var dmCatalogToken = new Option<string>(
-			name: "--dmCatalogToken",
+			name: "--dm-catalog-token",
 			description: "The key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services. This is optional if the key can also be provided using the 'DATAMINER_CATALOG_TOKEN' environment variable (unix/win) or using 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
 			{
 				IsRequired = false
 			};
 
 			var deployTimeout = new Option<int>(
-			name: "--deployTimeoutInSeconds",
+			name: "--deploy-timeout-in-seconds",
 			description: "Time-Out time in seconds to wait on successful deployment. This is optional, if not provided this will be 15 minutes. Fill in 0 for infinite.")
 			{
 				IsRequired = false,
@@ -59,7 +59,7 @@
 
 			deployTimeout.SetDefaultValue(-1);
 
-			var fromCatalog = new Command("FromCatalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent. Currently only supports private artifacts uploaded using a key from the organization.")
+			var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner agent. Currently only supports private artifacts uploaded using a key from the organization.")
 			{
 				isDebug,
 				artifactId,
@@ -68,34 +68,34 @@
 			};
 
 			var pathToArtifact = new Option<string>(
-				name: "--pathToArtifact",
+				name: "--path-to-artifact",
 				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
 			{
 				IsRequired = true
 			};
 
 			var dataMinerServerLocation = new Option<string>(
-			name: "--dmServerLocation",
+			name: "--dm-server-location",
 			description: "The IP or host name of a DataMiner agent.")
 			{
 				IsRequired = true
 			};
 
 			var dataminerUser = new Option<string>(
-			name: "--dmUser",
+			name: "--dm-user",
 			description: "The dataminer User to setup a direct connection to an accessible agent.")
 			{
 				IsRequired = true
 			};
 
 			var dataminerPassword = new Option<string>(
-			name: "--dmPassword",
+			name: "--dm-password",
 			description: "The password to setup a direct connection to an accessible agent.")
 			{
 				IsRequired = true
 			};
 
-			var fromArtifact = new Command("FromArtifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
+			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
 			{
 				isDebug,
 				pathToArtifact,
@@ -104,7 +104,7 @@
 				dataminerPassword
 			};
 
-			// Optionally can add add extra subcommands later to deploy from different locations to DataMiner.
+			// Optionally can add add extra subcommands later to deploy from different sources to DataMiner.
 
 			rootCommand.Add(fromArtifact);
 			rootCommand.Add(fromCatalog);
