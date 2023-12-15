@@ -74,34 +74,34 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 			};
 
 			var pathToArtifact = new Option<string>(
-				name: "--pathToArtifact",
+				name: "--path-to-artifact",
 				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
 			{
 				IsRequired = true
 			};
 
 			var dataMinerServerLocation = new Option<string>(
-			name: "--dmServerLocation",
+			name: "--dm-server-location",
 			description: "The IP or host name of a DataMiner agent.")
 			{
 				IsRequired = true
 			};
 
 			var dataminerUser = new Option<string>(
-			name: "--dmUser",
+			name: "--dm-user",
 			description: "The dataminer User to setup a direct connection to an accessible agent.")
 			{
 				IsRequired = true
 			};
 
 			var dataminerPassword = new Option<string>(
-			name: "--dmPassword",
+			name: "--dm-password",
 			description: "The password to setup a direct connection to an accessible agent.")
 			{
 				IsRequired = true
 			};
 
-			var fromArtifact = new Command("FromArtifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
+			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
 			{
 				isDebug,
 				pathToArtifact,
@@ -111,7 +111,7 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 				deployTimeout
 			};
 
-			// Optionally can add add extra subcommands later to deploy from different locations to DataMiner.
+			// Optionally can add add extra subcommands later to deploy from different sources to DataMiner.
 
 			rootCommand.Add(fromArtifact);
 			rootCommand.Add(fromCatalog);
