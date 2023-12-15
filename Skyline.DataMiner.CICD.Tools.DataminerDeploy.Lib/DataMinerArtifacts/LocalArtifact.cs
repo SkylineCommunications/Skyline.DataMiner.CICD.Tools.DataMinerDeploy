@@ -102,14 +102,14 @@
 			{
 				try
 				{
-					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("dmusername_encrypted");
+					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("DATAMINER_DEPLOY_USER_ENCRYPTED");
 					if (encryptedKey != null)
 					{
 						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
 
 						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
 						{
-							_logger.LogDebug("OK: Found token in Env Variable: 'dmusername_encrypted' created by WinEncryptedKeys.");
+							_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_USER_ENCRYPTED' created by WinEncryptedKeys.");
 							userFromEnv = keyFromWinEncryptedKeys;
 						}
 					}
@@ -121,14 +121,14 @@
 
 				try
 				{
-					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("dmpassword_encrypted");
+					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED");
 					if (encryptedKey != null)
 					{
 						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
 
 						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
 						{
-							_logger.LogDebug("OK: Found token in Env Variable: 'dmpassword_encrypted' created by WinEncryptedKeys.");
+							_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' created by WinEncryptedKeys.");
 							pwFromEnv = keyFromWinEncryptedKeys;
 						}
 					}
@@ -139,33 +139,33 @@
 				}
 			}
 
-			string userFromEnvironment = Environment.GetEnvironmentVariable("dmusername");
+			string userFromEnvironment = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_USER");
 
 			if (!String.IsNullOrWhiteSpace(userFromEnvironment))
 			{
 				if (!String.IsNullOrWhiteSpace(userFromEnv))
 				{
-					_logger.LogDebug("OK: Overriding 'dmusername_encrypted' with found token in Env Variable: 'dmusername'.");
+					_logger.LogDebug("OK: Overriding 'DATAMINER_DEPLOY_USER_ENCRYPTED' with found token in Env Variable: 'DATAMINER_DEPLOY_USER'.");
 				}
 				else
 				{
-					_logger.LogDebug("OK: Found token in Env Variable: 'dmusername'.");
+					_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_USER'.");
 				}
 
 				userFromEnv = userFromEnvironment;
 			}
 
-			string pwFromEnvironment = Environment.GetEnvironmentVariable("dmpassword");
+			string pwFromEnvironment = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD");
 
 			if (!String.IsNullOrWhiteSpace(pwFromEnvironment))
 			{
 				if (!String.IsNullOrWhiteSpace(pwFromEnv))
 				{
-					_logger.LogDebug("OK: Overriding 'dmpassword_encrypted' with found token in Env Variable: 'dmpassword'.");
+					_logger.LogDebug("OK: Overriding 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' with found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD'.");
 				}
 				else
 				{
-					_logger.LogDebug("OK: Found token in Env Variable: 'dmpassword'.");
+					_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD'.");
 				}
 
 				pwFromEnv = pwFromEnvironment;

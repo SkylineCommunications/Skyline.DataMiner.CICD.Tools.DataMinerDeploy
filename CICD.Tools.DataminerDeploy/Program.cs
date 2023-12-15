@@ -89,19 +89,19 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 			var dataminerUser = new Option<string>(
 			name: "--dm-user",
-			description: "The dataminer User to setup a direct connection to an accessible agent.")
+			description: "The dataminer User to setup a direct connection to an accessible agent. This is optional if the key can also be provided using the 'DATAMINER_DEPLOY_USER' environment variable (unix/win) or using 'DATAMINER_DEPLOY_USER_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
 			{
-				IsRequired = true
+				IsRequired = false
 			};
 
 			var dataminerPassword = new Option<string>(
 			name: "--dm-password",
 			description: "The password to setup a direct connection to an accessible agent.")
 			{
-				IsRequired = true
+				IsRequired = false
 			};
 
-			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
+			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.This is optional if the key can also be provided using the 'DATAMINER_DEPLOY_PASSWORD' environment variable (unix/win) or using 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
 			{
 				isDebug,
 				pathToArtifact,
