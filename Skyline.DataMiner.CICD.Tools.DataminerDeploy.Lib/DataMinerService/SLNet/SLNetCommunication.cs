@@ -5,6 +5,9 @@
 	using System.Runtime;
 	using System.Threading;
 
+	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.GRPCConnection;
+
 	internal enum AlarmLevel
 	{
 		Critical = 1,
@@ -17,17 +20,29 @@
 	{
 		private readonly Skyline.DataMiner.Net.Connection _connection;
 
-		private SLNetCommunication(string endUrlPoint, string username, string password)
+		private SLNetCommunication(string hostname, string username, string password)
 		{
-			// Doing this to support some older DataMiner versions.
-			Net.RemotingConnection.RegisterChannel();
-			_connection = Skyline.DataMiner.Net.ConnectionSettings.GetConnection(endUrlPoint);
-			// _connection.ClientApplicationName = "VSTEST.CONSOLE.EXE"; <-- TODO: check if we need this still?
 
+			if (hostname.Contains(".dataminer.services"))
+			{
+				throw new InvalidOperationException("Unable to directly deploy to a cloud agent. Please use CatalogUpload tool and Deployment from-catalog with this tool.");
+			}
+
+			// Only works in .NET Framework
+			//if (!hostname.ToLowerInvariant().Contains(".dataminer.services"))
+			//{
+			//	RemotingConnection.RegisterChannel();
+			//}
+
+			// Going to need to make a GRPC Connection directly. Remoting does NOT work on .NET6
+			// Minimum Supported DataMiner is then: Main Release 10.3.0   february 2023   feature release 10.3.2
+
+
+			_connection = new GRPCConnection(hostname);
 			_connection.Authenticate(username, password);
 			_connection.Subscribe(new Skyline.DataMiner.Net.SubscriptionFilter());
 
-			this.EndPoint = endUrlPoint;
+			this.EndPoint = hostname;
 		}
 
 		public Skyline.DataMiner.Net.Connection Connection
@@ -77,7 +92,7 @@
 		public Skyline.DataMiner.Net.Messages.DMSMessage[] SendMessage(Skyline.DataMiner.Net.Messages.DMSMessage message)
 		{
 
-			var result = Connection.SendAsyncOverConnection(new[] {message}, 3600000);
+			var result = Connection.SendAsyncOverConnection(new[] { message }, 3600000);
 			return result;
 		}
 

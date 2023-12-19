@@ -63,32 +63,40 @@
 
 		public async Task<bool> DeployAsync(TimeSpan timeout)
 		{
-			if (!fs.File.Exists(pathToArtifact))
+			return Task.Factory.StartNew(() =>
 			{
-				throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
-			}
+				if (!fs.File.Exists(pathToArtifact))
+				{
+					throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
+				}
 
-			var actualUser = dataminerUser ?? userFromEnv;
-			var actualPassword = dataminerPassword ?? userFromEnv;
-			service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
-			ArtifactType type = new ArtifactType(pathToArtifact);
+				var actualUser = String.IsNullOrWhiteSpace(dataminerUser)? userFromEnv:dataminerUser;
+				var actualPassword = String.IsNullOrWhiteSpace(dataminerPassword) ? pwFromEnv : dataminerPassword;
+				if (String.IsNullOrEmpty(actualUser) || String.IsNullOrEmpty(actualPassword))
+				{
+					throw new InvalidOperationException("Username or password is empty. Expected credentials either provided through arguments or with Environment Variables DATAMINER_DEPLOY_USER_ENCRYPTED/DATAMINER_DEPLOY_PASSWORD_ENCRYPTED or DATAMINER_DEPLOY_USER/DATAMINER_DEPLOY_PASSWORD.");
+				}
 
-			switch (type.Value)
-			{
-				case ArtifactTypeEnum.dmapp:
-					service.InstallNewStyleAppPackages(pathToArtifact);
-					break;
-				case ArtifactTypeEnum.legacyDmapp:
-					service.InstallOldStyleAppPackages(pathToArtifact);
-					break;
-				case ArtifactTypeEnum.dmprotocol:
-					service.InstallDataminerProtocol(pathToArtifact);
-					break;
-				default:
-					break;
-			}
+				service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
+				ArtifactType type = new ArtifactType(fs, pathToArtifact);
 
-			return true;
+				switch (type.Value)
+				{
+					case ArtifactTypeEnum.dmapp:
+						service.InstallNewStyleAppPackages(pathToArtifact);
+						break;
+					case ArtifactTypeEnum.legacyDmapp:
+						service.InstallOldStyleAppPackages(pathToArtifact);
+						break;
+					case ArtifactTypeEnum.dmprotocol:
+						service.InstallDataminerProtocol(pathToArtifact);
+						break;
+					default:
+						break;
+				}
+
+				return true;
+			}).Wait(timeout);
 		}
 
 		/// <summary>

@@ -18,7 +18,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>SkylineCommunications</Authors>
 		<Company>Skyline Communications</Company>
-		<Description>Deploys a package to DataMiner from the catalog or directly.</Description>
+		<Description>Deploys a package to DataMiner from the catalog or directly from an artifact.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

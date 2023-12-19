@@ -1,4 +1,6 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
+﻿using System;
+
+namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
 	public interface IDataMinerService
 	{

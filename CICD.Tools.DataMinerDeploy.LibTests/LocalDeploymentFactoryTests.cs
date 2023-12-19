@@ -91,104 +91,166 @@
 		}
 
 		[TestMethod()]
-		public async Task LocalTest_NoPath()
+		public async Task LocalTest_NoKey()
 		{
 			// Arrange
 			Mock<IFileSystem> fs = new Mock<IFileSystem>();
 			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
 			fs.Setup(p => p.File).Returns(fakeFile.Object);
 
 
-			string pathToArtifact = "fake/path/artifactname.dmapp";
+			string pathToArtifact = "TestData/TestNewDmapp.dmapp";
 			string dmServerLocation = "fake.host.server";
+
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
 
 			// Act
 			Func<Task> deployAction = async () =>
 			{
-				var artifact = DeploymentFactory.Local(fs.Object, pathToArtifact, logger, dmServerLocation);
+				var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation);
 				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 			};
 
 			// Assert
-			await deployAction.Should().ThrowAsync<InvalidOperationException>().WithMessage("*path does not exist*");
-		}
-
-		[TestMethod()]
-		public async Task LocalTest_ArgumentKey_TimeOut()
-		{
-			// Arrange
-			Mock<ICatalogService> fakeService = new Mock<ICatalogService>();
-			string fakeCatalogId = "fakeId";
-			string fakeToken = "agentToken";
-			Guid guid = Guid.NewGuid();
-
-			fakeService.Setup(p => p.DeployPackageAsync(fakeCatalogId, fakeToken, It.IsAny<CancellationToken>())).ReturnsAsync(new DeployingPackage("fakeId", guid));
-
-			// Act
-			Func<Task> deployAction = async () =>
-			{
-				var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger);
-				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(3));
-			};
-
-			// Assert
-			await deployAction.Should().ThrowAsync<TimeoutException>().WithMessage("*Status was never succeeded, error or timeout*");
+			await deployAction.Should().ThrowAsync<InvalidOperationException>().WithMessage("*is empty*");
 		}
 
 		[TestMethod()]
 		public async Task LocalTest_ArgumentKey_OK()
-		{
-			// Arrange
-			Mock<ICatalogService> fakeService = new Mock<ICatalogService>();
-			string fakeCatalogId = "fakeId";
-			string fakeToken = "agentToken";
-			Guid guid = Guid.NewGuid();
-			var deployingPackage = new DeployingPackage("fakeId", guid);
-			var deployedPackage = new DeployedPackage("succeeded");
-			fakeService.Setup(p => p.DeployPackageAsync(fakeCatalogId, fakeToken, It.IsAny<CancellationToken>())).ReturnsAsync(deployingPackage);
-			fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
+		{   // Arrange
+			Mock<IFileSystem> fs = new Mock<IFileSystem>();
+			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
+			string pathToArtifact = "TestData/TestNewDmapp.dmapp";
+			string dmServerLocation = "fake.host.server";
+			string user = "fakeUser";
+			string password = "fakePassword";
+
+			fs.Setup(p => p.File).Returns(fakeFile.Object);
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
 
 			// Act
-			var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger);
-			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+			var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation, user, password);
+			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
 
 			// Assert
-
 			result.Should().BeTrue();
 
-			fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
+			fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
 		}
 
 		[TestMethod()]
 		public async Task LocalTest_EnvKey_OK()
 		{
 			// Arrange
-			Mock<ICatalogService> fakeService = new Mock<ICatalogService>();
-			string fakeCatalogId = "fakeId";
-			string fakeToken = "agentToken";
+			Mock<IFileSystem> fs = new Mock<IFileSystem>();
+			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
 
-			Environment.SetEnvironmentVariable("DATAMINER_CATALOG_TOKEN", fakeToken);
+			string pathToArtifact = "TestData/TestNewDmapp.dmapp";
+			string dmServerLocation = "fake.host.server";
+			string user = "fakeUserFromEnv";
+			string password = "fakePasswordFomEnv";
 
-			Guid guid = Guid.NewGuid();
-			var deployingPackage = new DeployingPackage("fakeId", guid);
-			var deployedPackage = new DeployedPackage("succeeded");
-			fakeService.Setup(p => p.DeployPackageAsync(fakeCatalogId, fakeToken, It.IsAny<CancellationToken>())).ReturnsAsync(deployingPackage);
-			fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
+			fs.Setup(p => p.File).Returns(fakeFile.Object);
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+
+			Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_USER", user);
+			Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD", password);
 
 			// Act
-			var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger);
-			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+			var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation);
+			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
+
+			// Assert
+			result.Should().BeTrue();
+			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
+			fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
+
+		}
+		[TestMethod()]
+		public async Task LocalTest_EnvEncrypedKey_OK()
+		{
+			// Arrange
+			Mock<IFileSystem> fs = new Mock<IFileSystem>();
+			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
+			string pathToArtifact = "TestData/TestNewDmapp.dmapp";
+			string dmServerLocation = "fake.host.server";
+			string user = "fakeUserFromEncryptedEnv";
+			string password = "fakePasswordFomEncryptedEnv";
+
+			fs.Setup(p => p.File).Returns(fakeFile.Object);
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+
+			WinEncryptedKeys.Lib.Keys.SetKey("DATAMINER_DEPLOY_USER_ENCRYPTED", user);
+			WinEncryptedKeys.Lib.Keys.SetKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED", password);
+
+			// Act
+			var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation);
+			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
+
+			// Assert
+			result.Should().BeTrue();
+			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
+			fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
+		}
+
+		[TestMethod()]
+		public async Task LocalTest_ArgumentKey_OldDmapp()
+		{   // Arrange
+			Mock<IFileSystem> fs = new Mock<IFileSystem>();
+			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
+			string pathToArtifact = "TestData/TestOldDmapp.dmapp";
+			string dmServerLocation = "fake.host.server";
+			string user = "fakeUser";
+			string password = "fakePassword";
+
+			fs.Setup(p => p.File).Returns(fakeFile.Object);
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+
+			// Act
+			var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation, user, password);
+			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
 
 			// Assert
 			result.Should().BeTrue();
 
-			fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
+			fakeService.Verify(p => p.InstallOldStyleAppPackages(pathToArtifact));
 		}
 
 		[TestMethod()]
-		public async Task LocalTest_EnvEncrypedKey_OK()
-		{
+		public async Task LocalTest_ArgumentKey_Protocol()
+		{   // Arrange
+			Mock<IFileSystem> fs = new Mock<IFileSystem>();
+			Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+			Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
 
+			string pathToArtifact = "TestData/TestProtocol.dmprotocol";
+			string dmServerLocation = "fake.host.server";
+			string user = "fakeUser";
+			string password = "fakePassword";
+
+			fs.Setup(p => p.File).Returns(fakeFile.Object);
+			fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+
+			// Act
+			var artifact = DeploymentFactory.Local(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation, user, password);
+			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
+
+			// Assert
+			result.Should().BeTrue();
+
+			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
+			fakeService.Verify(p => p.InstallDataminerProtocol(pathToArtifact));
 		}
 	}
 }

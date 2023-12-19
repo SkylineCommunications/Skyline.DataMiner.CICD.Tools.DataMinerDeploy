@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO.Compression;
 using System.Text;
 
+using Skyline.DataMiner.CICD.FileSystem;
+
 namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
 {
 
 	enum ArtifactTypeEnum
 	{
+		unknown,
 		dmapp,
 		legacyDmapp,
 		dmprotocol,
@@ -17,34 +20,41 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
 	{
 		public ArtifactTypeEnum Value { get; set; }
 
-		public ArtifactType(string pathToArtifact)
+		public ArtifactType(IFileSystem fs, string pathToArtifact)
 		{
-			if (pathToArtifact.EndsWith(".dmprotocol"))
+			if (fs.File.Exists(pathToArtifact))
 			{
-				Value = ArtifactTypeEnum.dmprotocol;
-			}
-			else
-			{
-				using (var zipFile = ZipFile.OpenRead(pathToArtifact))
+				if (pathToArtifact.EndsWith(".dmprotocol"))
 				{
-					ZipArchiveEntry foundAppInfo = zipFile.GetEntry("AppInfo.xml");
-					if (foundAppInfo != null)
+					Value = ArtifactTypeEnum.dmprotocol;
+				}
+				else
+				{
+					using (var zipFile = ZipFile.OpenRead(pathToArtifact))
 					{
-						Value = ArtifactTypeEnum.dmapp;
-					}
-					else
-					{
-						ZipArchiveEntry foundUpgradeDll = zipFile.GetEntry("SLUpgrade.dll");
-						if (foundUpgradeDll != null)
+						ZipArchiveEntry foundAppInfo = zipFile.GetEntry("AppInfo.xml");
+						if (foundAppInfo != null)
 						{
-							Value = ArtifactTypeEnum.legacyDmapp;
+							Value = ArtifactTypeEnum.dmapp;
 						}
 						else
 						{
-							throw new InvalidOperationException($"Could not detect artifact type (.dmprotocol, dmapp or legacy dmapp) from the item {pathToArtifact}");
+							ZipArchiveEntry foundUpgradeDll = zipFile.GetEntry("SLUpgrade.dll");
+							if (foundUpgradeDll != null)
+							{
+								Value = ArtifactTypeEnum.legacyDmapp;
+							}
+							else
+							{
+								throw new InvalidOperationException($"Could not detect artifact type (.dmprotocol, dmapp or legacy dmapp) from the item {pathToArtifact}");
+							}
 						}
 					}
 				}
+			}
+			else
+			{
+				throw new ArgumentException($"Could not find artifact in provided path {pathToArtifact}", "pathToArtifact");
 			}
 		}
 	}
