@@ -1,8 +1,7 @@
 {
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
-      "commandName": "Project",
-      "commandLineArgs": "FromCatalog\r\n--artifactId \"package/2c9e7ccf-e1c2-4597-acde-44a458345b8e\"\r\n--debug"
+      "commandName": "Project"
     }
   }
 }

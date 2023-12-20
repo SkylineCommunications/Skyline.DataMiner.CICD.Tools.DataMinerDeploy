@@ -71,7 +71,8 @@
 			var output = await ConfirmSuccesfullDeploymentAsync(catalogAgentToken, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(2), timeout, deploying);
 			_logger.LogDebug("Deployment Finished.");
 			_logger.LogInformation(JsonConvert.SerializeObject(output));
-			return true;
+
+			return output.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase);
 		}
 
 		private async Task<DeployedPackage> ConfirmSuccesfullDeploymentAsync(string key, TimeSpan deploymentBackOff, TimeSpan deploymentMaxBackOff,
@@ -108,7 +109,6 @@
 			if (deployedPackage.Status.Equals("Timeout", StringComparison.InvariantCultureIgnoreCase) || deployedPackage.Status.Equals("Error", StringComparison.InvariantCultureIgnoreCase))
 			{
 				_logger.LogCritical($"Deployment Failed with status {deployedPackage.Status} for artifact {deployingPackage.ArtifactId}");
-				return null;
 			}
 
 			return deployedPackage;

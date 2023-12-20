@@ -9,6 +9,7 @@
 	using Serilog;
 
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
+	using Skyline.DataMiner.CICD.Tools.Reporter;
 
 	/// <summary>
 	/// Deploys a package to DataMiner from the catalog or directly.
@@ -80,43 +81,78 @@
 
 		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
 		{
-			LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
-			if (!isDebug)
-			{
-				logConfig.MinimumLevel.Information();
-			}
-			else
-			{
-				logConfig.MinimumLevel.Debug();
-			}
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
+			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
 
-			var seriLog = logConfig.CreateLogger();
+			try
 
-			LoggerFactory loggerFactory = new LoggerFactory();
-			loggerFactory.AddSerilog(seriLog);
-
-			var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
-
-			IArtifact artifact;
-			if (String.IsNullOrWhiteSpace(dmCatalogToken))
 			{
-				artifact = DeploymentFactory.Cloud(artifactId, logger);
-			}
-			else
-			{
-				artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
-			}
+				LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+				if (!isDebug)
+				{
+					logConfig.MinimumLevel.Information();
+				}
+				else
+				{
+					logConfig.MinimumLevel.Debug();
+				}
 
-			if (deployTimeout < 0)
-			{
-				deployTimeout = 900; // Default to 15min
-			}
-			else if (deployTimeout == 0)
-			{
-				deployTimeout = Int32.MaxValue; // MaxValue
-			}
+				var seriLog = logConfig.CreateLogger();
 
-			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
+				LoggerFactory loggerFactory = new LoggerFactory();
+				loggerFactory.AddSerilog(seriLog);
+
+				var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+
+				IArtifact artifact;
+				if (String.IsNullOrWhiteSpace(dmCatalogToken))
+				{
+					artifact = DeploymentFactory.Cloud(artifactId, logger);
+				}
+				else
+				{
+					artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
+				}
+
+				if (deployTimeout < 0)
+				{
+					deployTimeout = 900; // Default to 15min
+				}
+				else if (deployTimeout == 0)
+				{
+					deployTimeout = Int32.MaxValue; // MaxValue
+				}
+
+				if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
+				{
+					devopsMetricsMessage += "|Status:OK";
+				}
+				else
+				{
+					devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+				}
+			}
+			catch (Exception ex)
+			{
+				devopsMetricsMessage += "|Status:Fail-" + ex.Message;
+				throw;
+			}
+			finally
+			{
+				if (!string.IsNullOrWhiteSpace(devopsMetricsMessage))
+				{
+					try
+					{
+						DevOpsMetrics devOpsMetrics = new DevOpsMetrics();
+						await devOpsMetrics.ReportAsync(devopsMetricsMessage);
+					}
+					catch
+					{
+						// Fire and forget.
+					}
+				}
+			}
 		}
 	}
 }
