@@ -68,18 +68,3 @@ WinEncryptedKeys --name "DATAMINER_CATALOG_TOKEN_ENCRYPTED" --value "MyTokenHere
 
 You can review and make suggestions to the sourcecode of this encryption tool here: 
 https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
-
-
-## Deploying from a local artifact
-
-Deployment from a local artifact directly to a self-hosted DataMiner is also possible. 
-
-This can be useful when there are self-hosted static staging and production systems on a local network that are not internet accessible.
-
- ### FromArtifact
-
- The most basic command will allow deployment of an artifact using the path to the artifact and a local DataMiner user name and password.
-
-```console
-dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location "" --dm-user "" --dm-password ""
-```

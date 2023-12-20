@@ -35,14 +35,14 @@
 		}
 
 		/// <summary>
-		/// Starts the deployment process on a DataMiner Server. You'll need to call
+		/// Starts the deployment process on a DataMiner Server. You'll need to call GetDeployedPackageAsync to see if it's finished.
 		/// </summary>
-		/// <param name="artifactIdentifier"></param>
-		/// <param name="key"></param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
-		/// <exception cref="InvalidOperationException"></exception>
-		/// <exception cref="UnauthorizedAccessException"></exception>
+		/// <param name="artifactIdentifier">The guid of the artifact.</param>
+		/// <param name="key">The token for accessing and deploying on an agent.</param>
+		/// <param name="cancellationToken">A token to cancel the deployment.</param>
+		/// <returns>An identifier of the deployment process.</returns>
+		/// <exception cref="InvalidOperationException">When deployment fails.</exception>
+		/// <exception cref="UnauthorizedAccessException">When authentication to the agent and azure fails.</exception>
 		public async Task<DeployingPackage> DeployPackageAsync(string artifactIdentifier, string key, CancellationToken cancellationToken)
 		{
 			HttpOperationResponse<DeploymentModel> res;

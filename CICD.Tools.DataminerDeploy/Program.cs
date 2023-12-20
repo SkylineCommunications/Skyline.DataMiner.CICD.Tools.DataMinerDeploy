@@ -67,60 +67,15 @@
 				deployTimeout
 			};
 
-			var pathToArtifact = new Option<string>(
-				name: "--path-to-artifact",
-				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
-			{
-				IsRequired = true
-			};
-
-			var dataMinerServerLocation = new Option<string>(
-			name: "--dm-server-location",
-			description: "The IP or host name of a DataMiner agent.")
-			{
-				IsRequired = true
-			};
-
-			var dataminerUser = new Option<string>(
-			name: "--dm-user",
-			description: "The dataminer User to setup a direct connection to an accessible agent.")
-			{
-				IsRequired = true
-			};
-
-			var dataminerPassword = new Option<string>(
-			name: "--dm-password",
-			description: "The password to setup a direct connection to an accessible agent.")
-			{
-				IsRequired = true
-			};
-
-			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local .dmapp to a DataMiner agent.")
-			{
-				isDebug,
-				pathToArtifact,
-				dataMinerServerLocation,
-				dataminerUser,
-				dataminerPassword
-			};
-
 			// Optionally can add add extra subcommands later to deploy from different sources to DataMiner.
-
-			rootCommand.Add(fromArtifact);
 			rootCommand.Add(fromCatalog);
 
 			fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
-			fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword);
 
 			// dataminer-package-deploy
 			await rootCommand.InvokeAsync(args);
 
 			return 0;
-		}
-
-		private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword)
-		{
-			//Main Code for program here
 		}
 
 		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
