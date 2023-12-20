@@ -17,6 +17,7 @@
 		private readonly string catalogAgentToken;
 		private readonly ICatalogService service;
 		private string keyFromEnv;
+		private bool disposedValue;
 
 		public CatalogArtifact(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger)
 		{
@@ -160,6 +161,26 @@
 
 				keyFromEnv = keyFromEnvironment;
 			}
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					cancellationTokenSource.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

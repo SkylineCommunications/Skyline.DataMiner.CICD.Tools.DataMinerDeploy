@@ -6,7 +6,7 @@
 	/// <summary>
 	/// Represents an artifact you wish to deploy to a DataMiner system.
 	/// </summary>
-	public interface IArtifact
+	public interface IArtifact : IDisposable
 	{
 		/// <summary>
 		/// Attempts to cancel an ongoing deployment. Create a new IArtifact to attempt a new deployment.

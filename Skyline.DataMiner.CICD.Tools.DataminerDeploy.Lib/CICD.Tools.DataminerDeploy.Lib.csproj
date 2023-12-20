@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
@@ -15,7 +15,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>SkylineCommunications</Authors>
 		<Company>Skyline Communications</Company>
-		<Description>Library code containing ways to deploy an artifact to DataMiner.</Description>
+		<Description>Library code containing ways to deploy an artifact to DataMiner. Code Entry Point: using (var artifact = DeploymentFactory.Cloud("IdOfArtifact", "TokenOfAgent", logger)){var result = await artifact.DeployAsync(TimeSpan.FromSeconds(120));}</Description>
 		<RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</RootNamespace>
 	</PropertyGroup>
 

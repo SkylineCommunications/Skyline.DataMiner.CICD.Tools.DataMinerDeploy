@@ -65,8 +65,10 @@
 			// Act
 			Func<Task> deployAction = async () =>
 			{
-				var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger);
-				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+				using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+				{
+					var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+				}
 			};
 
 			// Assert
@@ -87,8 +89,10 @@
 			// Act
 			Func<Task> deployAction = async () =>
 			{
-				var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger);
-				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(3));
+				using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger))
+				{
+					var result = await artifact.DeployAsync(TimeSpan.FromSeconds(3));
+				}
 			};
 
 			// Assert
@@ -109,14 +113,16 @@
 			fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
 			// Act
-			var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger);
-			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+			using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger))
+			{
+				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
-			// Assert
+				// Assert
 
-			result.Should().BeTrue();
+				result.Should().BeTrue();
 
-			fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+				fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+			}
 		}
 
 		[TestMethod()]
@@ -136,13 +142,15 @@
 			fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
 			// Act
-			var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger);
-			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+			using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+			{
+				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
-			// Assert
-			result.Should().BeTrue();
+				// Assert
+				result.Should().BeTrue();
 
-			fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+				fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+			}
 		}
 
 		[TestMethod()]
@@ -162,13 +170,15 @@
 			fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
 			// Act
-			var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger);
-			var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
+			using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+			{
+				var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
-			// Assert
-			result.Should().BeTrue();
+				// Assert
+				result.Should().BeTrue();
 
-			fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+				fakeLogger.VerifyLog().InformationWasCalled().MessageEquals(@"{""Status"":""succeeded""}");
+			}
 		}
 	}
 }

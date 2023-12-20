@@ -106,6 +106,7 @@
 				var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
 
 				IArtifact artifact;
+
 				if (String.IsNullOrWhiteSpace(dmCatalogToken))
 				{
 					artifact = DeploymentFactory.Cloud(artifactId, logger);
@@ -115,22 +116,29 @@
 					artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
 				}
 
-				if (deployTimeout < 0)
+				try
 				{
-					deployTimeout = 900; // Default to 15min
-				}
-				else if (deployTimeout == 0)
-				{
-					deployTimeout = Int32.MaxValue; // MaxValue
-				}
+					if (deployTimeout < 0)
+					{
+						deployTimeout = 900; // Default to 15min
+					}
+					else if (deployTimeout == 0)
+					{
+						deployTimeout = Int32.MaxValue; // MaxValue
+					}
 
-				if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
-				{
-					devopsMetricsMessage += "|Status:OK";
+					if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
+					{
+						devopsMetricsMessage += "|Status:OK";
+					}
+					else
+					{
+						devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+					}
 				}
-				else
+				finally
 				{
-					devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+					artifact.Dispose();
 				}
 			}
 			catch (Exception ex)
