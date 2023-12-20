@@ -140,7 +140,7 @@
 			}
 			finally
 			{
-				if (!string.IsNullOrWhiteSpace(devopsMetricsMessage))
+				if (!String.IsNullOrWhiteSpace(devopsMetricsMessage))
 				{
 					try
 					{
