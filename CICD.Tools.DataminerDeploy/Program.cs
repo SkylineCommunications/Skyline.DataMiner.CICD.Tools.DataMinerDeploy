@@ -11,7 +11,7 @@
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
 
 	/// <summary>
-	/// Deploys a package to DataMiner from the catalog or directly..
+	/// Deploys a package to DataMiner from the catalog or directly.
 	/// </summary>
 	public static class Program
 	{
