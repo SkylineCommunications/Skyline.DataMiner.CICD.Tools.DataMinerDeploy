@@ -74,5 +74,14 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Tests
 
 			Assert.AreEqual("dmscript/000-0-0000-000", result);
 		}
+
+		[TestMethod()]
+		public void ExtractArtifactIdTest_Direct_Letters()
+		{
+			string input = "dmscript/abc-0-0ABC-00A";
+			var result = Program.ExtractArtifactId(input);
+
+			Assert.AreEqual("dmscript/abc-0-0ABC-00A", result);
+		}
 	}
 }
