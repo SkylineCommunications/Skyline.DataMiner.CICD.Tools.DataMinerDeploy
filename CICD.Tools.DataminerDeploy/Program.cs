@@ -1,7 +1,12 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
+﻿using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("CICD.Tools.DataMinerDeployTests")]
+namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 {
 	using System;
 	using System.CommandLine;
+	using System.Text.Json;
+	using System.Text.RegularExpressions;
 	using System.Threading.Tasks;
 
 	using Microsoft.Extensions.Logging;
@@ -85,6 +90,9 @@
 			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
 			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
 
+
+			artifactId = ExtractArtifactId(artifactId);
+
 			try
 
 			{
@@ -161,6 +169,52 @@
 					}
 				}
 			}
+		}
+
+
+		/// <summary>
+		/// Extracts the artifact ID from a common output received from the dataminer-catalog-upload tool.
+		/// </summary>
+		/// <param name="artifactId">The input could include a json or other debug info.</param>
+		/// <returns>The extracted clean artifactId.</returns>
+		internal static string ExtractArtifactId(string artifactId)
+		{
+			// smart filtering of input artifactId
+			// could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
+
+			string cleanArtifactId = artifactId;
+			int lastInformation = artifactId.LastIndexOf("INF]");
+			if (lastInformation != -1)
+			{
+				string onlyTheJson = artifactId.Substring(lastInformation + 4);
+				try
+				{
+					using (JsonDocument doc = JsonDocument.Parse(onlyTheJson))
+					{
+						JsonElement root = doc.RootElement;
+						var jsonIdProperty = root.GetProperty("artifactId");
+						cleanArtifactId = jsonIdProperty.GetString();
+					}
+				}
+				catch
+				{
+					// Best effort. Gobble up parsing exceptions and try to handle situations with weird escapings like powershell
+					var idStart = onlyTheJson.IndexOf("artifactId");
+					if (idStart != -1)
+					{
+						var idStop = onlyTheJson.IndexOf("}", idStart);
+						if (idStop != -1)
+						{
+							var jsonIdProperty = onlyTheJson.Substring(idStart + 11, idStop - 11 - idStart);
+
+							Regex regex = new Regex(@"[\s,:.;\\""']+");
+							cleanArtifactId = regex.Replace(jsonIdProperty, "");
+						}
+					}
+				}
+			}
+
+			return cleanArtifactId;
 		}
 	}
 }
