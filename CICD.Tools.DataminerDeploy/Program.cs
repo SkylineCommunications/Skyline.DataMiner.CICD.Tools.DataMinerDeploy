@@ -79,9 +79,7 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 			fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
 
 			// dataminer-package-deploy
-			await rootCommand.InvokeAsync(args);
-
-			return 0;
+			return await rootCommand.InvokeAsync(args);
 		}
 
 		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
