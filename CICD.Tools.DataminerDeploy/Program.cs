@@ -163,6 +163,17 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 
 			await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout));
 		}
+		
+		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
+		{
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
+			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
+
+
+			artifactId = ExtractArtifactId(artifactId);
+
+			try
 
 			{
 				LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
@@ -239,7 +250,6 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 				}
 			}
 		}
-
 
 		/// <summary>
 		/// Extracts the artifact ID from a common output received from the dataminer-catalog-upload tool.
