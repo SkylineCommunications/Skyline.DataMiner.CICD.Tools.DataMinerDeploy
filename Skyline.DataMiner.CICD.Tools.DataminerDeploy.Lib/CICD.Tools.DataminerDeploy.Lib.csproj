@@ -31,7 +31,7 @@
 	  <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	  <PackageReference Include="SharpZipLib" Version="1.4.2" />
-	  <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2-ReadAllBytes1" />
+	  <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2" />
 	  <PackageReference Include="Skyline.DataMiner.CICD.Tools.WinEncryptedKeys.Lib" Version="1.0.2" />
 	  <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
 	</ItemGroup>
