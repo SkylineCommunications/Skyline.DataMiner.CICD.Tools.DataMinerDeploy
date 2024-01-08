@@ -2,7 +2,7 @@
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
       "commandName": "Project",
-      "commandLineArgs": "from-artifact\r\n--debug\r\n--path-to-artifact \"C:\\Users\\JANS\\Downloads\\Microsoft_Platform_6_0_0_4_B8.dmprotocol\"\r\n--dm-server-location \"dms-it-dev.skyline.local\"\r\n--dm-user \"DeployTestUser\"\r\n--dm-password \"Test123Test123\""
+      "commandLineArgs": "from-artifact\r\n--debug\r\n--path-to-artifact \"C:\\Users\\JANS\\Desktop\\CLPIntegrationTests_10.11.6.51.dmapp\"\r\n--dm-server-location \"dms-it-dev.skyline.local\"\r\n--dm-user \"DeployTestUser\"\r\n--dm-password \"Test123Test123\""
     }
   }
 }

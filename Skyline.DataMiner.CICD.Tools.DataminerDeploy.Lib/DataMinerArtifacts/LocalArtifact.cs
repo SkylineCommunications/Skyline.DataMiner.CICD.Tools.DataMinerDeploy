@@ -11,6 +11,7 @@
 	using System.Net.Mime;
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts;
 	using System.Threading;
+	using Skyline.DataMiner.Net;
 
 	internal class LocalArtifact : IArtifact
 	{
@@ -79,19 +80,24 @@
 					throw new InvalidOperationException("Username or password is empty. Expected credentials either provided through arguments or with Environment Variables DATAMINER_DEPLOY_USER_ENCRYPTED/DATAMINER_DEPLOY_PASSWORD_ENCRYPTED or DATAMINER_DEPLOY_USER/DATAMINER_DEPLOY_PASSWORD.");
 				}
 
+				_logger.LogDebug($"Setting up connection to {dataMinerServerLocation}...");
 				service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
+				_logger.LogDebug($"Connection established.");
 				ArtifactType type = new ArtifactType(fs, pathToArtifact);
 
 				switch (type.Value)
 				{
 					case ArtifactTypeEnum.dmapp:
+						_logger.LogDebug($"Found DataMiner application installation package (.dmapp).");
 						service.InstallNewStyleAppPackages(pathToArtifact);
 						break;
 					case ArtifactTypeEnum.legacyDmapp:
-						service.InstallOldStyleAppPackages(pathToArtifact);
+						_logger.LogDebug($"Found legacy DataMiner application installation package (.dmapp).");
+						service.InstallOldStyleAppPackages(pathToArtifact, timeout);
 						break;
 					case ArtifactTypeEnum.dmprotocol:
-						service.InstallDataminerProtocol(pathToArtifact);
+						_logger.LogDebug($"Found DataMiner protocol package (.dmprotocol).");
+						service.InstallDataMinerProtocol(pathToArtifact);
 						break;
 					default:
 						break;

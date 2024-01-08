@@ -63,6 +63,7 @@
 		/// <summary>
 		/// A deployment using a local package to a local network connected DataMiner agent.
 		/// </summary>
+		/// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.Zip inside) will restart the agent.</remarks>
 		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
 		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
 		/// <param name="dataminerUser">The dataminer User to setup a direct connection to an accessible agent.</param>
@@ -77,6 +78,7 @@
 		/// <summary>
 		/// A deployment using a local package to a local network connected DataMiner agent.
 		/// </summary>
+		/// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.Zip inside) will restart the agent.</remarks>
 		/// <param name="dmService">An instance of <see cref="IDataMinerService"/> used for direct communication with a DataMiner.</param>
 		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
 		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
