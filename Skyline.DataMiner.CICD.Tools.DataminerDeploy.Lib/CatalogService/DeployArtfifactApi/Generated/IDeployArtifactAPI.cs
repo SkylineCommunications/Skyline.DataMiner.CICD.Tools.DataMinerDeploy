@@ -17,7 +17,7 @@ namespace DeployArtifactApi.Generated
     /// <summary>
     /// Deploy Artifact API can be used to deploy an artifact to a dms.
     /// </summary>
-    public partial interface IDeployArtifactAPI : System.IDisposable
+    internal partial interface IDeployArtifactAPI : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.

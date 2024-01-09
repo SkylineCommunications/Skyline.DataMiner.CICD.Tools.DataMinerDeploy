@@ -18,7 +18,7 @@ namespace ArtifactDeploymentInfoApi.Generated
     /// Artifact Deployment Info API can be used to view the various
     /// deployments.
     /// </summary>
-    public partial interface IArtifactDeploymentInfoAPI : System.IDisposable
+    internal partial interface IArtifactDeploymentInfoAPI : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.

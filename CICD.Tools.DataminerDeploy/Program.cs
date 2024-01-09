@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("CICD.Tools.DataMinerDeployTests")]
+
 namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 {
 	using System;
@@ -73,13 +74,185 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 				deployTimeout
 			};
 
+			var pathToArtifact = new Option<string>(
+				name: "--path-to-artifact",
+				description: "Path to the application package (.dmapp) or protocol package (.dmprotocol).")
+			{
+				IsRequired = true,
+			};
+
+			var dataMinerServerLocation = new Option<string>(
+			name: "--dm-server-location",
+			description: "The IP or host name of a DataMiner agent.")
+			{
+				IsRequired = true
+			};
+
+			var dataminerUser = new Option<string>(
+			name: "--dm-user",
+			description: "The dataminer User to setup a direct connection to an accessible agent. This is optional if the key can also be provided using the 'DATAMINER_DEPLOY_USER' environment variable (unix/win) or using 'DATAMINER_DEPLOY_USER_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
+			{
+				IsRequired = false
+			};
+
+			var dataminerPassword = new Option<string>(
+			name: "--dm-password",
+			description: "The password to setup a direct connection to an accessible agent. This is optional if the key can also be provided using the 'DATAMINER_DEPLOY_PASSWORD' environment variable (unix/win) or using 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (windows).")
+			{
+				IsRequired = false
+			};
+
+			var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local application package (.dmapp) or protocol package (.dmprotocol) to a DataMiner agent. Warning: if using legacy application packages (.dmapp that you unzip, contains an Update.zip) the remote agent will restart.")
+			{
+				isDebug,
+				pathToArtifact,
+				dataMinerServerLocation,
+				dataminerUser,
+				dataminerPassword,
+				deployTimeout
+			};
+
 			// Optionally can add add extra subcommands later to deploy from different sources to DataMiner.
+
+			rootCommand.Add(fromArtifact);
 			rootCommand.Add(fromCatalog);
 
 			fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
+			fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
 
 			// dataminer-package-deploy
 			return await rootCommand.InvokeAsync(args);
+		}
+
+		/// <summary>
+		/// Extracts the artifact ID from a common output received from the dataminer-catalog-upload tool.
+		/// </summary>
+		/// <param name="artifactId">The input could include a json or other debug info.</param>
+		/// <returns>The extracted clean artifactId.</returns>
+		internal static string ExtractArtifactId(string artifactId)
+		{
+			// smart filtering of input artifactId
+			// could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
+
+			string cleanArtifactId = artifactId;
+			int lastInformation = artifactId.LastIndexOf("INF]");
+			if (lastInformation != -1)
+			{
+				string onlyTheJson = artifactId.Substring(lastInformation + 4);
+				try
+				{
+					using (JsonDocument doc = JsonDocument.Parse(onlyTheJson))
+					{
+						JsonElement root = doc.RootElement;
+						var jsonIdProperty = root.GetProperty("artifactId");
+						cleanArtifactId = jsonIdProperty.GetString();
+					}
+				}
+				catch
+				{
+					// Best effort. Gobble up parsing exceptions and try to handle situations with weird escapings like powershell
+					var idStart = onlyTheJson.IndexOf("artifactId");
+					if (idStart != -1)
+					{
+						var idStop = onlyTheJson.IndexOf("}", idStart);
+						if (idStop != -1)
+						{
+							var jsonIdProperty = onlyTheJson.Substring(idStart + 11, idStop - 11 - idStart);
+
+							Regex regex = new Regex(@"[\s,:.;\\""']+");
+							cleanArtifactId = regex.Replace(jsonIdProperty, "");
+						}
+					}
+				}
+			}
+
+			return cleanArtifactId;
+		}
+
+		private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
+		{
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
+			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
+			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact";
+
+			try
+			{
+				LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+
+				if (!isDebug)
+				{
+					logConfig.MinimumLevel.Information();
+				}
+				else
+				{
+					logConfig.MinimumLevel.Debug();
+				}
+
+				var seriLog = logConfig.CreateLogger();
+
+				LoggerFactory loggerFactory = new LoggerFactory();
+				loggerFactory.AddSerilog(seriLog);
+
+				var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+
+				IArtifact artifact;
+
+				if (String.IsNullOrWhiteSpace(dataminerPassword))
+				{
+					artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation);
+				}
+				else
+				{
+					artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation, dataminerUser, dataminerPassword);
+				}
+				try
+				{
+					if (deployTimeout < 0)
+					{
+						deployTimeout = 900; // Default to 15min
+					}
+					else if (deployTimeout == 0)
+					{
+						deployTimeout = Int32.MaxValue; // MaxValue
+					}
+
+					if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
+					{
+						devopsMetricsMessage += "|Status:OK";
+					}
+					else
+					{
+						devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+					}
+				}
+				finally
+				{
+					if (artifact != null)
+					{
+						artifact.Dispose();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				devopsMetricsMessage += "|Status:Fail-" + ex.Message;
+				throw;
+			}
+			finally
+			{
+				if (!String.IsNullOrWhiteSpace(devopsMetricsMessage))
+				{
+					try
+					{
+						DevOpsMetrics devOpsMetrics = new DevOpsMetrics();
+						await devOpsMetrics.ReportAsync(devopsMetricsMessage);
+					}
+					catch
+					{
+						// Fire and forget.
+					}
+				}
+			}
 		}
 
 		private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
@@ -87,7 +260,6 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
 			// Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
 			string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
-
 
 			artifactId = ExtractArtifactId(artifactId);
 
@@ -167,52 +339,6 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy
 					}
 				}
 			}
-		}
-
-
-		/// <summary>
-		/// Extracts the artifact ID from a common output received from the dataminer-catalog-upload tool.
-		/// </summary>
-		/// <param name="artifactId">The input could include a json or other debug info.</param>
-		/// <returns>The extracted clean artifactId.</returns>
-		internal static string ExtractArtifactId(string artifactId)
-		{
-			// smart filtering of input artifactId
-			// could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
-
-			string cleanArtifactId = artifactId;
-			int lastInformation = artifactId.LastIndexOf("INF]");
-			if (lastInformation != -1)
-			{
-				string onlyTheJson = artifactId.Substring(lastInformation + 4);
-				try
-				{
-					using (JsonDocument doc = JsonDocument.Parse(onlyTheJson))
-					{
-						JsonElement root = doc.RootElement;
-						var jsonIdProperty = root.GetProperty("artifactId");
-						cleanArtifactId = jsonIdProperty.GetString();
-					}
-				}
-				catch
-				{
-					// Best effort. Gobble up parsing exceptions and try to handle situations with weird escapings like powershell
-					var idStart = onlyTheJson.IndexOf("artifactId");
-					if (idStart != -1)
-					{
-						var idStop = onlyTheJson.IndexOf("}", idStart);
-						if (idStop != -1)
-						{
-							var jsonIdProperty = onlyTheJson.Substring(idStart + 11, idStop - 11 - idStart);
-
-							Regex regex = new Regex(@"[\s,:.;\\""']+");
-							cleanArtifactId = regex.Replace(jsonIdProperty, "");
-						}
-					}
-				}
-			}
-
-			return cleanArtifactId;
 		}
 	}
 }

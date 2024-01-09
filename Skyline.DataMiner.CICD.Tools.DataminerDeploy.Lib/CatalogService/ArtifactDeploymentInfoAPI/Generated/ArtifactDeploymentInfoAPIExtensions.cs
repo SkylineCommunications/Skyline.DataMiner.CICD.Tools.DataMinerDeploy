@@ -15,7 +15,7 @@ namespace ArtifactDeploymentInfoApi.Generated
     /// <summary>
     /// Extension methods for ArtifactDeploymentInfoAPI.
     /// </summary>
-    public static partial class ArtifactDeploymentInfoAPIExtensions
+    internal static partial class ArtifactDeploymentInfoAPIExtensions
     {
             /// <param name='operations'>
             /// The operations group for this extension method.

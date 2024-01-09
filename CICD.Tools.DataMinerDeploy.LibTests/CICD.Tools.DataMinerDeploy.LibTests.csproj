@@ -23,4 +23,16 @@
     <ProjectReference Include="..\Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib\CICD.Tools.DataMinerDeploy.Lib.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="TestData\TestNewDmapp.dmapp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\TestOldDmapp.dmapp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\TestProtocol.dmprotocol">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

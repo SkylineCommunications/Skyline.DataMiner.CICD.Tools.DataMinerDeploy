@@ -9,7 +9,7 @@ namespace DeployArtifactApi.Generated.Models
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class DeployArtifactAsSystemForm
+    internal partial class DeployArtifactAsSystemForm
     {
         /// <summary>
         /// Initializes a new instance of the DeployArtifactAsSystemForm class.

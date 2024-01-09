@@ -13,7 +13,7 @@ namespace DeployArtifactApi.Generated
     /// <summary>
     /// Extension methods for DeployArtifactAPI.
     /// </summary>
-    public static partial class DeployArtifactAPIExtensions
+    internal static partial class DeployArtifactAPIExtensions
     {
             /// <param name='operations'>
             /// The operations group for this extension method.

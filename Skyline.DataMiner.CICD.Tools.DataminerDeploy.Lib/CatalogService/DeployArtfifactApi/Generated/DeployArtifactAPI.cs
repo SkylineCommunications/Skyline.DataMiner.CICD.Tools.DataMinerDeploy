@@ -20,7 +20,7 @@ namespace DeployArtifactApi.Generated
     /// <summary>
     /// Deploy Artifact API can be used to deploy an artifact to a dms.
     /// </summary>
-    public partial class DeployArtifactAPI : ServiceClient<DeployArtifactAPI>, IDeployArtifactAPI
+    internal partial class DeployArtifactAPI : ServiceClient<DeployArtifactAPI>, IDeployArtifactAPI
     {
         /// <summary>
         /// The base URI of the service.

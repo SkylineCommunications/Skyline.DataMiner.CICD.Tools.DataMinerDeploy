@@ -11,7 +11,7 @@ namespace ArtifactDeploymentInfoApi.Generated.Models
     using System.Collections.Generic;
     using System.Linq;
 
-    public partial class DeploymentEventModel
+    internal partial class DeploymentEventModel
     {
         /// <summary>
         /// Initializes a new instance of the DeploymentEventModel class.
