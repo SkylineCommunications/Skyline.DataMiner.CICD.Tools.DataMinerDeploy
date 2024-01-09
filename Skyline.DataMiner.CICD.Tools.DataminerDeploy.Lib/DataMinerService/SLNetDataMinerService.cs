@@ -167,6 +167,7 @@
 				});
 				task.Wait(timeout);
 
+#pragma warning disable S2583 // Conditionally executed code should be reachable <--- Is set to true inside of the task
 				if (!upgradeOk)
 				{
 					throw new TimeoutException("DMA upgrade did not complete within " + timeout + " minutes. See 'Upgrade Log Table' for more info.");
@@ -175,6 +176,7 @@
 				{
 					logger.LogDebug("Finished Installation of application package.");
 				}
+#pragma warning restore S2583 // Conditionally executed code should be reachable
 			}
 		}
 

@@ -20,12 +20,12 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		private Mock<ILogger> fakeLogger;
 		private ILogger logger;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		private string originalUser_encrypt;
 		private string originalUser;
 		private string originalPw_encrypt;
 		private string originalPw;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 		[TestInitialize()]
 		public void Initialize()
