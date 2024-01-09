@@ -64,31 +64,33 @@
 		/// A deployment using a local package to a local network connected DataMiner agent.
 		/// </summary>
 		/// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.Zip inside) will restart the agent.</remarks>
+		/// <param name="fs">An instance of <see cref="IFileSystem"/> used to access directories and files.</param>
 		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
 		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
-		/// <param name="dataminerUser">The dataminer User to setup a direct connection to an accessible agent.</param>
-		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataMinerUser">The DataMiner User to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataMinerPassword">The password to setup a direct connection to an accessible agent.</param>
 		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
 		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-		public static IArtifact Local(IFileSystem fs, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataminerUser = "", string dataminerPassword = "")
+		public static IArtifact Local(IFileSystem fs, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataMinerUser = "", string dataMinerPassword = "")
 		{
-			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger, fs);
+			return new LocalArtifact(pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs);
 		}
 
 		/// <summary>
 		/// A deployment using a local package to a local network connected DataMiner agent.
 		/// </summary>
 		/// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.Zip inside) will restart the agent.</remarks>
+		/// <param name="fs">An instance of <see cref="IFileSystem"/> to access directories and files.</param>
 		/// <param name="dmService">An instance of <see cref="IDataMinerService"/> used for direct communication with a DataMiner.</param>
 		/// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
 		/// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
-		/// <param name="dataminerUser">The dataminer User to setup a direct connection to an accessible agent.</param>
-		/// <param name="dataminerPassword">The password to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataMinerUser">The DataMiner User to setup a direct connection to an accessible agent.</param>
+		/// <param name="dataMinerPassword">The password to setup a direct connection to an accessible agent.</param>
 		/// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
 		/// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-		public static IArtifact Local(IFileSystem fs, IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataminerUser = "", string dataminerPassword = "")
+		public static IArtifact Local(IFileSystem fs, IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation, string dataMinerUser = "", string dataMinerPassword = "")
 		{
-			return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, logger, fs);
+			return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs);
 		}
 	}
 }

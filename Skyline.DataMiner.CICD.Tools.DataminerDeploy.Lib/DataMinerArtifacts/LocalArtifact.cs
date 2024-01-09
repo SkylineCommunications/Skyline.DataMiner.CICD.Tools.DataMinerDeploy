@@ -9,6 +9,7 @@
 	using Skyline.DataMiner.CICD.FileSystem;
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.SLDataGateway.Helpers;
 
 	internal class LocalArtifact : IArtifact
 	{
@@ -23,19 +24,19 @@
 		private string pwFromEnv;
 		private string userFromEnv;
 
-		public LocalArtifact(IDataMinerService dataminerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
+		public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
 		{
 			if (String.IsNullOrWhiteSpace(pathToArtifact))
 			{
 				throw new ArgumentNullException(nameof(pathToArtifact));
 			}
 
-			if (dataminerService == null)
+			if (dataMinerService == null)
 			{
-				throw new ArgumentNullException(nameof(dataminerService));
+				throw new ArgumentNullException(nameof(dataMinerService));
 			}
 			this.fs = fs;
-			this.service = dataminerService;
+			this.service = dataMinerService;
 			this.pathToArtifact = pathToArtifact;
 			this.dataMinerServerLocation = dataMinerServerLocation;
 			this.dataminerUser = dataMinerUser;
@@ -63,7 +64,7 @@
 
 		public async Task<bool> DeployAsync(TimeSpan timeout)
 		{
-			return Task.Factory.StartNew(() =>
+			return await Task.Factory.StartNew(() =>
 			{
 				if (!fs.File.Exists(pathToArtifact))
 				{
@@ -104,7 +105,7 @@
 				}
 
 				return true;
-			}).Wait(timeout);
+			}).TimeoutAfter(timeout);
 		}
 
 		public void Dispose()
@@ -137,76 +138,58 @@
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
-				try
+				// Order of priority. Priority for regular environment keys as they are win/unix and industry standard in pipelines
+				userFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_USER_ENCRYPTED") ?? userFromEnv;
+				pwFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED") ?? pwFromEnv;
+
+				userFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_USER") ?? userFromEnv;
+				pwFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_PASSWORD") ?? pwFromEnv;
+			}
+		}
+
+		private string TryFindEncryptedEnvironmentKey(string key)
+		{
+			try
+			{
+				var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey(key);
+				if (encryptedKey != null)
 				{
-					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("DATAMINER_DEPLOY_USER_ENCRYPTED");
-					if (encryptedKey != null)
+					string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
+
+					if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
 					{
-						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
-
-						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
-						{
-							_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_USER_ENCRYPTED' created by WinEncryptedKeys.");
-							userFromEnv = keyFromWinEncryptedKeys;
-						}
+						_logger.LogDebug($"OK: Found token in Env Variable: '{key}' created by WinEncryptedKeys.");
+						return keyFromWinEncryptedKeys;
 					}
-				}
-				catch (InvalidOperationException)
-				{
-					// Gobble up, no key means we try the next thing.
-				}
-
-				try
-				{
-					var encryptedKey = WinEncryptedKeys.Lib.Keys.RetrieveKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED");
-					if (encryptedKey != null)
-					{
-						string keyFromWinEncryptedKeys = new System.Net.NetworkCredential(string.Empty, encryptedKey).Password;
-
-						if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
-						{
-							_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' created by WinEncryptedKeys.");
-							pwFromEnv = keyFromWinEncryptedKeys;
-						}
-					}
-				}
-				catch (InvalidOperationException)
-				{
-					// Gobble up, no key means we try the next thing.
 				}
 			}
+			catch (InvalidOperationException)
+			{
+				// Gobble up, no key means we try the next thing.
+			}
 
-			string userFromEnvironment = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_USER");
+			return null;
+		}
+
+		private string TryFindEnvironmentKey(string key)
+		{
+			string userFromEnvironment = Environment.GetEnvironmentVariable(key);
 
 			if (!String.IsNullOrWhiteSpace(userFromEnvironment))
 			{
 				if (!String.IsNullOrWhiteSpace(userFromEnv))
 				{
-					_logger.LogDebug("OK: Overriding 'DATAMINER_DEPLOY_USER_ENCRYPTED' with found token in Env Variable: 'DATAMINER_DEPLOY_USER'.");
+					_logger.LogDebug("OK: Overriding previously encrypted key with found token in Env Variable: 'DATAMINER_DEPLOY_USER'.");
 				}
 				else
 				{
 					_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_USER'.");
 				}
 
-				userFromEnv = userFromEnvironment;
+				return userFromEnvironment;
 			}
 
-			string pwFromEnvironment = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD");
-
-			if (!String.IsNullOrWhiteSpace(pwFromEnvironment))
-			{
-				if (!String.IsNullOrWhiteSpace(pwFromEnv))
-				{
-					_logger.LogDebug("OK: Overriding 'DATAMINER_DEPLOY_PASSWORD_ENCRYPTED' with found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD'.");
-				}
-				else
-				{
-					_logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_DEPLOY_PASSWORD'.");
-				}
-
-				pwFromEnv = pwFromEnvironment;
-			}
+			return null;
 		}
 	}
 }

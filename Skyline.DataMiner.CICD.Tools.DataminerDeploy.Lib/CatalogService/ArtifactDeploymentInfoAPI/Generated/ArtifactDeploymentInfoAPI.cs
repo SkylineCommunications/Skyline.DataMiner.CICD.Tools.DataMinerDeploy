@@ -21,7 +21,7 @@ namespace ArtifactDeploymentInfoApi.Generated
     /// Artifact Deployment Info API can be used to view the various
     /// deployments.
     /// </summary>
-    public partial class ArtifactDeploymentInfoAPI : ServiceClient<ArtifactDeploymentInfoAPI>, IArtifactDeploymentInfoAPI
+    internal partial class ArtifactDeploymentInfoAPI : ServiceClient<ArtifactDeploymentInfoAPI>, IArtifactDeploymentInfoAPI
     {
         /// <summary>
         /// The base URI of the service.

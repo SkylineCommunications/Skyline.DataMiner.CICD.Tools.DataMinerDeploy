@@ -122,7 +122,7 @@
 					deploymentMaxBackOff,
 					deploymentTimeout.Subtract(deploymentBackOff));
 			}
-			catch (TimeoutException ex)
+			catch (TimeoutException)
 			{
 				throw new TimeoutException($"Deployment Status was never succeeded, error or timeout after trying for {maxTimeout} seconds");
 			}

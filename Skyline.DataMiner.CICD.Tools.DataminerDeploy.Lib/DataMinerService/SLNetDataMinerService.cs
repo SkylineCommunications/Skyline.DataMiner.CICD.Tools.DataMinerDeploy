@@ -97,7 +97,7 @@
 
 			var helper = new AppPackageHelper(slnet.SendMessage);
 			logger.LogDebug($"Cleaning previous uploaded packages with same name and version...");
-			(string appName, string appVersion, int appBuild) = LoadAppPackage(packageFilePath);
+			(string appName, string appVersion, _) = LoadAppPackage(packageFilePath);
 			int cleaned = CleanPreviousUploaded(helper, appName, appVersion);
 
 			logger.LogDebug($"Cleaning {cleaned} previous uploaded packages with same name ({appName}) and version ({appVersion})");
