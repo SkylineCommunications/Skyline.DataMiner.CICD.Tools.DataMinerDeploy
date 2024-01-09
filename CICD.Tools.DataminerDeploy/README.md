@@ -49,7 +49,7 @@ dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32
 
 ### Authentication and Tokens
 
-You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the ken.
+You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the dm-catalog-token.
 ```console
 dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
 ```

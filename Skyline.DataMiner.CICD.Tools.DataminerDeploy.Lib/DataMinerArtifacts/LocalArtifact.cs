@@ -58,7 +58,7 @@
 
 		public void CancelDeployment()
 		{
-			throw new NotImplementedException();
+			throw new InvalidOperationException("Unable to cancel deployment of a local artifact.");
 		}
 
 		public async Task<bool> DeployAsync(TimeSpan timeout)
@@ -120,6 +120,7 @@
 			{
 				if (disposing)
 				{
+					// Nothing to dispose right now
 					//cancellationTokenSource.Dispose();
 				}
 
