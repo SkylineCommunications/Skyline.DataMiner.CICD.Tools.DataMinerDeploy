@@ -3,14 +3,11 @@
 	using System;
 	using System.Runtime.InteropServices;
 	using System.Threading.Tasks;
-	using Skyline.DataMiner.CICD.FileSystem;
 
 	using Microsoft.Extensions.Logging;
-	using System.IO.Compression;
-	using System.IO;
-	using System.Net.Mime;
+
+	using Skyline.DataMiner.CICD.FileSystem;
 	using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts;
-	using System.Threading;
 	using Skyline.DataMiner.Net;
 
 	internal class LocalArtifact : IArtifact
@@ -19,12 +16,12 @@
 		private readonly string dataminerPassword;
 		private readonly string dataMinerServerLocation;
 		private readonly string dataminerUser;
-		private readonly string pathToArtifact;
-		private string userFromEnv;
-		private string pwFromEnv;
-		private bool disposedValue;
-		private readonly IDataMinerService service;
 		private readonly IFileSystem fs;
+		private readonly string pathToArtifact;
+		private readonly IDataMinerService service;
+		private bool disposedValue;
+		private string pwFromEnv;
+		private string userFromEnv;
 
 		public LocalArtifact(IDataMinerService dataminerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
 		{
@@ -51,7 +48,7 @@
 		{
 		}
 
-		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs) : this(new SLNetDataMinerService(fs, logger), pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs)
+		public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs) : this(DataMinerServiceFactory.CreateWithSLNet(fs, logger), pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs)
 		{
 		}
 
@@ -73,7 +70,7 @@
 					throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
 				}
 
-				var actualUser = String.IsNullOrWhiteSpace(dataminerUser)? userFromEnv:dataminerUser;
+				var actualUser = String.IsNullOrWhiteSpace(dataminerUser) ? userFromEnv : dataminerUser;
 				var actualPassword = String.IsNullOrWhiteSpace(dataminerPassword) ? pwFromEnv : dataminerPassword;
 				if (String.IsNullOrEmpty(actualUser) || String.IsNullOrEmpty(actualPassword))
 				{
@@ -91,20 +88,43 @@
 						_logger.LogDebug($"Found DataMiner application installation package (.dmapp).");
 						service.InstallNewStyleAppPackages(pathToArtifact);
 						break;
+
 					case ArtifactTypeEnum.legacyDmapp:
 						_logger.LogDebug($"Found legacy DataMiner application installation package (.dmapp).");
-						service.InstallOldStyleAppPackages(pathToArtifact, timeout);
+						service.InstallLegacyStyleAppPackages(pathToArtifact, timeout);
 						break;
+
 					case ArtifactTypeEnum.dmprotocol:
 						_logger.LogDebug($"Found DataMiner protocol package (.dmprotocol).");
 						service.InstallDataMinerProtocol(pathToArtifact);
 						break;
+
 					default:
 						break;
 				}
 
 				return true;
 			}).Wait(timeout);
+		}
+
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					//cancellationTokenSource.Dispose();
+				}
+
+				disposedValue = true;
+			}
 		}
 
 		/// <summary>
@@ -186,26 +206,6 @@
 
 				pwFromEnv = pwFromEnvironment;
 			}
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					//cancellationTokenSource.Dispose();
-				}
-
-				disposedValue = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }

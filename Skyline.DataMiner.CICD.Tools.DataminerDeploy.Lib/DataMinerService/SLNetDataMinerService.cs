@@ -108,7 +108,7 @@
 			logger.LogDebug("Finished Installation of application package.");
 		}
 
-		public void InstallOldStyleAppPackages(string package, TimeSpan timeout)
+		public void InstallLegacyStyleAppPackages(string package, TimeSpan timeout)
 		{
 			if (slnet == null)
 			{

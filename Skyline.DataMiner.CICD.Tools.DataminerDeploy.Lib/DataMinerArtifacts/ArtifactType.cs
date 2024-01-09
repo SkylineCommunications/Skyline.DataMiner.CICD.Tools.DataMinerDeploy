@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Text;
-
-using Skyline.DataMiner.CICD.FileSystem;
-
-namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
 {
+	using System;
+	using System.IO.Compression;
 
-	enum ArtifactTypeEnum
+	using Skyline.DataMiner.CICD.FileSystem;
+
+	internal enum ArtifactTypeEnum
 	{
 		unknown,
 		dmapp,
@@ -18,8 +15,6 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
 
 	internal class ArtifactType
 	{
-		public ArtifactTypeEnum Value { get; set; }
-
 		public ArtifactType(IFileSystem fs, string pathToArtifact)
 		{
 			if (fs.File.Exists(pathToArtifact))
@@ -57,5 +52,7 @@ namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts
 				throw new ArgumentException($"Could not find artifact in provided path {pathToArtifact}", "pathToArtifact");
 			}
 		}
+
+		public ArtifactTypeEnum Value { get; set; }
 	}
 }

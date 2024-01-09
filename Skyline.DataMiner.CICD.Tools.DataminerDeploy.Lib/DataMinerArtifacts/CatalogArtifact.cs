@@ -16,8 +16,8 @@
 		private readonly CancellationTokenSource cancellationTokenSource;
 		private readonly string catalogAgentToken;
 		private readonly ICatalogService service;
-		private string keyFromEnv;
 		private bool disposedValue;
+		private string keyFromEnv;
 
 		public CatalogArtifact(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger)
 		{
@@ -76,8 +76,28 @@
 			return output.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase);
 		}
 
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					cancellationTokenSource.Dispose();
+				}
+
+				disposedValue = true;
+			}
+		}
+
 		private async Task<DeployedPackage> ConfirmSuccesfullDeploymentAsync(string key, TimeSpan deploymentBackOff, TimeSpan deploymentMaxBackOff,
-			TimeSpan deploymentTimeout, DeployingPackage deployingPackage)
+							TimeSpan deploymentTimeout, DeployingPackage deployingPackage)
 		{
 			DeployedPackage deployedPackage;
 			var maxTimeout = deploymentTimeout.TotalSeconds;
@@ -161,26 +181,6 @@
 
 				keyFromEnv = keyFromEnvironment;
 			}
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					cancellationTokenSource.Dispose();
-				}
-
-				disposedValue = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }

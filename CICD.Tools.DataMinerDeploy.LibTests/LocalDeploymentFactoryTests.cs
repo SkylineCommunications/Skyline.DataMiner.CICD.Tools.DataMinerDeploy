@@ -224,7 +224,7 @@
 			result.Should().BeTrue();
 
 			fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
-			fakeService.Verify(p => p.InstallOldStyleAppPackages(pathToArtifact));
+			fakeService.Verify(p => p.InstallLegacyStyleAppPackages(pathToArtifact, TimeSpan.FromSeconds(5)));
 		}
 
 		[TestMethod()]

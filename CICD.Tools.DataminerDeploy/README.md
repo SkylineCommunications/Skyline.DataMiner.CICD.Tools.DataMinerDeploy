@@ -91,7 +91,7 @@ You can deploy 3 types of packages:
 > When installing a legacy DataMiner Application Package the agent will restart. The other 2 options do not restart the agent.
 
 > **Note**
-> Usage of the Skyline.DataMiner.CICD.Tools.PackageCreation tool or downloading from the catalog will not result in Legacy packages.
+> Usage of the Skyline.DataMiner.CICD.Tools.Packager tool or downloading from the catalog will not result in Legacy packages.
 > Legacy packages come from deprecated Package Creation software or manual creation.
 
 
