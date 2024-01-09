@@ -36,11 +36,11 @@ dataminer-package-deploy help
 
 ## Deploying from the catalog
 
-Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol) or if you have a DataMiner running as a service(DAAS).
+Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol). It is also required if you have a DataMiner running as a service (DAAS).
 
 If you've uploaded an artifact beforehand you only need to artifact id to deploy it to one or more agents of your organization at any time in the future.
 
-### FromCatalog
+### Basic Command
 The most basic command will allow deployment of an artifact using the artifact identifier returned from performing an upload using ["dataminer-catalog-upload"](https://www.nuget.org/packages/Skyline.DataMiner.CICD.Tools.CatalogUpload).
 
 ```console
@@ -49,7 +49,7 @@ dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32
 
 ### Authentication and Tokens
 
-You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the secure token.
+You can choose to add the DATAMINER_CATALOG_TOKEN to an environment variable instead and skip having to pass along the ken.
 ```console
 dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0"
 ```
@@ -77,14 +77,56 @@ https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncrypt
 
 ## Deploying from a local artifact
 
-Deployment from a local artifact directly to a self-hosted DataMiner is also possible. 
+Deployment from a local artifact directly to a self-hosted DataMiner is also possible.
 
 This can be useful when there are self-hosted static staging and production systems on a local network that are not internet accessible.
 
- ### FromArtifact
+You can deploy 3 types of packages:
+
+- Connector or Protocol Packages (.dmprotocol)
+- DataMiner Application Packages (.dmapp)
+- Legacy DataMiner Application Packages (.dmapp that when unzipped, contains an Update.zip file)
+
+> **Important**
+> When installing a legacy DataMiner Application Package the agent will restart. The other 2 options do not restart the agent.
+
+> **Note**
+> Usage of the Skyline.DataMiner.CICD.Tools.PackageCreation tool or downloading from the catalog will not result in Legacy packages.
+> Legacy packages come from deprecated Package Creation software or manual creation.
+
+
+ ### Basic Command
 
  The most basic command will allow deployment of an artifact using the path to the artifact and a local DataMiner user name and password.
 
 ```console
 dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location "" --dm-user "" --dm-password ""
 ```
+
+### Authentication and Tokens
+
+You can choose to add the DATAMINER_DEPLOY_USER and the DATAMINER_DEPLOY_PASSWORD to environment variables instead and skip having to pass along the dm-user and dm-password variables every time.
+
+```console
+dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location ""
+```
+ 
+ There are 2 options to store the key in an environment variable:
+- key stored as an Environment Variable called "DATAMINER_DEPLOY_USER" and DATAMINER_DEPLOY_PASSWORD. (unix/win)
+- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_DEPLOY_USER_ENCRYPTED" and "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" (windows only)
+
+The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (github, gitlab, azure, ...)
+The second option can be beneficial on a static server such as Jenkins or your local machine (windows only). It adds additional encryption to the environment variable only allowing decryption on the same machine. 
+
+Running as Administrator:
+```console
+dotnet tool install -g Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
+WinEncryptedKeys --name "DATAMINER_CATALOG_TOKEN_ENCRYPTED" --value "MyTokenHere"
+```
+
+> **Note**
+> Make sure you close your commandline tool so it clears the history.
+> This only works on windows machines.
+
+You can review and make suggestions to the sourcecode of this encryption tool here: 
+https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
