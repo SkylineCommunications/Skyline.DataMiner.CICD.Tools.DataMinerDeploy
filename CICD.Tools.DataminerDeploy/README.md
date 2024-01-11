@@ -36,7 +36,7 @@ dataminer-package-deploy help
 
 ## Deploying from the catalog
 
-Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol). It is also required if you have a DataMiner running as a service (DAAS).
+Deployment from the cloud can be beneficial when you do not have the local artifact any more (.dmapp, .dmprotocol). It is also required if you have a DataMiner running as a service (DaaS).
 
 If you've uploaded an artifact beforehand you only need to artifact id to deploy it to one or more agents of your organization at any time in the future.
 

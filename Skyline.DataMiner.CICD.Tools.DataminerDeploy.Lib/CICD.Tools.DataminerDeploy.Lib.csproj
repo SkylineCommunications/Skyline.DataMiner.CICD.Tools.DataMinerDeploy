@@ -1,64 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-		<AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</AssemblyName>
-		<RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</RootNamespace>
-		<PackageTags>Skyline;DataMiner;CICD</PackageTags>
-		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon>Icon.png</PackageIcon>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Authors>SkylineCommunications</Authors>
-		<Company>Skyline Communications</Company>
-		<Description>Library code containing ways to deploy an artifact to DataMiner. Code Entry Point: using (var artifact = DeploymentFactory.Cloud("IdOfArtifact", "TokenOfAgent", logger)){var result = await artifact.DeployAsync(TimeSpan.FromSeconds(120));}</Description>
-		<RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</RootNamespace>
-		<UserSecretsId>ef9f5572-8851-4e53-894b-9f2535d15287</UserSecretsId>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</AssemblyName>
+    <RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</RootNamespace>
+    <PackageTags>Skyline;DataMiner;CICD</PackageTags>
+    <PackageProjectUrl>https://skyline.be</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIcon>Icon.png</PackageIcon>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>SkylineCommunications</Authors>
+    <Company>Skyline Communications</Company>
+    <Description>Library code containing ways to deploy an artifact to DataMiner. Code Entry Point: using (var artifact = DeploymentFactory.Cloud("IdOfArtifact", "TokenOfAgent", logger)){var result = await artifact.DeployAsync(TimeSpan.FromSeconds(120));}</Description>
+    <RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib</RootNamespace>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="" />
-		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
-		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-	  <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	  <PackageReference Include="SharpZipLib" Version="1.4.2" />
-	  <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2" />
-	  <PackageReference Include="Skyline.DataMiner.CICD.Tools.WinEncryptedKeys.Lib" Version="1.0.2" />
-	  <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
+    <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2" />
+    <PackageReference Include="Skyline.DataMiner.CICD.Tools.WinEncryptedKeys.Lib" Version="1.0.2" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="DataMinerAssemblies\" />
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>DataMinerAssemblies\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>DataMinerAssemblies\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>DataMinerAssemblies\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SLNetTypes">
+      <HintPath>DataMinerAssemblies\SLNetTypes.dll</HintPath>
+    </Reference>
+    <Reference Include="SLProtoBufLibrary">
+      <HintPath>DataMinerAssemblies\SLProtoBufLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="SLUnitConverter">
+      <HintPath>DataMinerAssemblies\SLUnitConverter.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Reference Include="ICSharpCode.SharpZipLib">
-	    <HintPath>DataMinerAssemblies\ICSharpCode.SharpZipLib.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Newtonsoft.Json">
-	    <HintPath>DataMinerAssemblies\Newtonsoft.Json.dll</HintPath>
-	  </Reference>
-	  <Reference Include="protobuf-net">
-	    <HintPath>DataMinerAssemblies\protobuf-net.dll</HintPath>
-	  </Reference>
-	  <Reference Include="SLNetTypes">
-	    <HintPath>DataMinerAssemblies\SLNetTypes.dll</HintPath>
-	  </Reference>
-	  <Reference Include="SLProtoBufLibrary">
-	    <HintPath>DataMinerAssemblies\SLProtoBufLibrary.dll</HintPath>
-	  </Reference>
-	  <Reference Include="SLUnitConverter">
-	    <HintPath>DataMinerAssemblies\SLUnitConverter.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-	
 </Project>

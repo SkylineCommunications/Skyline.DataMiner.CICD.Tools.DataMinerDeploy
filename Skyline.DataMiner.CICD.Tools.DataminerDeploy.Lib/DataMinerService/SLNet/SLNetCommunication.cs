@@ -1,105 +1,90 @@
-﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.RemotingConnection
+﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerService.SLNet
 {
-	using System;
-	using System.Linq;
-	using System.Runtime;
-	using System.Threading;
+    using System;
+    using System.Linq;
+    using System.Threading;
 
-	using Skyline.DataMiner.Net;
-	using Skyline.DataMiner.Net.GRPCConnection;
+    using Skyline.DataMiner.Net;
+    using Skyline.DataMiner.Net.GRPCConnection;
+    using Skyline.DataMiner.Net.Messages;
 
-	internal enum AlarmLevel
-	{
-		Critical = 1,
-		Major,
-		Minor,
-		Warning,
-		Normal
-	}
-	internal sealed class SLNetCommunication : IDisposable
-	{
-		private readonly Skyline.DataMiner.Net.Connection _connection;
+    internal sealed class SLNetCommunication : IDisposable
+    {
+        private SLNetCommunication(string hostname, string username, string password)
+        {
+            if (hostname.Contains(".dataminer.services"))
+            {
+                throw new InvalidOperationException("Unable to directly deploy to a cloud agent. Please use CatalogUpload tool and Deployment from-catalog with this tool.");
+            }
 
-		private SLNetCommunication(string hostname, string username, string password)
-		{
+            // Only works in .NET Framework
+            //if (!hostname.ToLowerInvariant().Contains(".dataminer.services"))
+            //{
+            //	RemotingConnection.RegisterChannel();
+            //}
 
-			if (hostname.Contains(".dataminer.services"))
-			{
-				throw new InvalidOperationException("Unable to directly deploy to a cloud agent. Please use CatalogUpload tool and Deployment from-catalog with this tool.");
-			}
+            // Going to need to make a GRPC Connection directly. Remoting does NOT work on .NET6
+            // Minimum Supported DataMiner is then: Main Release 10.3.0   february 2023   feature release 10.3.2
+            
+            Connection = new GRPCConnection(hostname);
+            Connection.Authenticate(username, password);
+            Connection.Subscribe(new SubscriptionFilter());
 
-			// Only works in .NET Framework
-			//if (!hostname.ToLowerInvariant().Contains(".dataminer.services"))
-			//{
-			//	RemotingConnection.RegisterChannel();
-			//}
+            EndPoint = hostname;
+        }
 
-			// Going to need to make a GRPC Connection directly. Remoting does NOT work on .NET6
-			// Minimum Supported DataMiner is then: Main Release 10.3.0   february 2023   feature release 10.3.2
+        public Connection Connection { get; }
 
+        public string EndPoint { get; private set; }
 
-			_connection = new GRPCConnection(hostname);
-			_connection.Authenticate(username, password);
-			_connection.Subscribe(new Skyline.DataMiner.Net.SubscriptionFilter());
+        public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password)
+        {
+            return new SLNetCommunication(endUrlPoint, username, password);
+        }
 
-			this.EndPoint = hostname;
-		}
+        public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password, int retryInterval, int retries)
+        {
+            int i = 0;
+            while (true)
+            {
+                try
+                {
+                    SLNetCommunication connection = new SLNetCommunication(endUrlPoint, username, password);
+                    return connection;
+                }
+                catch (Exception e)
+                {
+                    if (i == retries)
+                    {
+                        string message = $"Error while creating connection after {retries} retries. Last exception :\n{e}";
+                        throw new TimeoutException(message);
+                    }
+                    else
+                    {
+                        i++;
+                        Thread.Sleep(retryInterval);
+                    }
+                }
+            }
+        }
 
-		public Skyline.DataMiner.Net.Connection Connection
-		{
-			get { return _connection; }
-		}
-
-		public string EndPoint { get; private set; }
-
-		public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password)
-		{
-			return new SLNetCommunication(endUrlPoint, username, password);
-		}
-
-		public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password, int retryInterval, int retries)
-		{
-			int i = 0;
-			while (true)
-			{
-				try
-				{
-					SLNetCommunication connection = new SLNetCommunication(endUrlPoint, username, password);
-					return connection;
-				}
-				catch (Exception e)
-				{
-					if (i == retries)
-					{
-						string message = String.Format("Error while creating connection after {0} retries. Last exception :\n{1}", retries, e);
-						throw new TimeoutException(message);
-					}
-					else
-					{
-						i++;
-						System.Threading.Thread.Sleep(retryInterval);
-					}
-				}
-			}
-		}
-
-		public void Dispose()
-		{
-			_connection.Dispose();
-		}
+        public void Dispose()
+        {
+            Connection.Dispose();
+        }
 
 
-		public Skyline.DataMiner.Net.Messages.DMSMessage[] SendMessage(Skyline.DataMiner.Net.Messages.DMSMessage message)
-		{
+        public DMSMessage[] SendMessage(DMSMessage message)
+        {
 
-			var result = Connection.SendAsyncOverConnection(new[] { message }, 3600000);
-			return result;
-		}
+            var result = Connection.SendAsyncOverConnection(new[] { message }, 3600000);
+            return result;
+        }
 
-		public Skyline.DataMiner.Net.Messages.DMSMessage SendSingleResponseMessage(Skyline.DataMiner.Net.Messages.DMSMessage message)
-		{
-			var result = Connection.SendAsyncOverConnection(new[] { message }, 3600000);
-			return result.FirstOrDefault();
-		}
-	}
+        public DMSMessage SendSingleResponseMessage(DMSMessage message)
+        {
+            var result = Connection.SendAsyncOverConnection(new[] { message }, 3600000);
+            return result.FirstOrDefault();
+        }
+    }
 }
