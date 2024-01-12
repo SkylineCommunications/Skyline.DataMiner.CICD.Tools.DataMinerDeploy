@@ -67,9 +67,9 @@
                 UploadDataMinerProtocolMessage uploadDataMinerProtocolMessage = new UploadDataMinerProtocolMessage(dmprotocolCookie);
                 uploadDataMinerProtocolResponse = slnet.SendSingleResponseMessage(uploadDataMinerProtocolMessage) as UploadDataMinerProtocolResponse;
             }
-            catch
+            catch (Exception e)
             {
-                // ignore
+                throw new InvalidOperationException("Unable to process the protocol package in DataMiner with exception: " + e.Message, e);
             }
 
             if (uploadDataMinerProtocolResponse != null)
@@ -85,7 +85,7 @@
             }
             else
             {
-                logger.LogDebug("Unable to process protocol package.");
+                logger.LogError("Unable to process protocol package. Returned response from DataMiner was null.");
             }
         }
 

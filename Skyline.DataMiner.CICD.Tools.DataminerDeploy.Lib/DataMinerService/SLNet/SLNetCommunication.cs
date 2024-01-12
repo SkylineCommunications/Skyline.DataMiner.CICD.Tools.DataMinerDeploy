@@ -25,13 +25,15 @@
 
             // Going to need to make a GRPC Connection directly. Remoting does NOT work on .NET6
             // Minimum Supported DataMiner is then: Main Release 10.3.0   february 2023   feature release 10.3.2
-            
+
             Connection = new GRPCConnection(hostname);
             Connection.PollingRequestTimeout = 120000;
             Connection.ConnectTimeoutTime = 120000;
             Connection.AuthenticateMessageTimeout = 120000;
-
             Connection.Authenticate(username, password);
+
+            // Required to allow async slnet calls that we need for installing.
+            Connection.Subscribe(new SubscriptionFilter());
 
             EndPoint = hostname;
         }
