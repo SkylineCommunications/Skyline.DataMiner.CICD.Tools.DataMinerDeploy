@@ -21,7 +21,7 @@
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Upgrade;
 
-    internal class SLNetDataMinerService : IDisposable, IDataMinerService
+    internal class SLNetDataMinerService : IDataMinerService
     {
         private readonly IFileSystem fs;
         private readonly ILogger logger;

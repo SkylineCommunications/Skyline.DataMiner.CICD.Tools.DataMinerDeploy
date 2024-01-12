@@ -25,6 +25,7 @@
         private bool disposedValue;
         private string pwFromEnv;
         private string userFromEnv;
+        private bool shouldDisposeConnection = true;
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
         {
@@ -45,6 +46,7 @@
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, ILogger logger, IFileSystem fs) : this(dataMinerService, pathToArtifact, dataMinerServerLocation, null, null, logger, fs)
         {
+            shouldDisposeConnection = false;
         }
 
         public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs) : this(DataMinerServiceFactory.CreateWithSLNet(fs, logger), pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs)
@@ -121,6 +123,10 @@
             {
                 if (disposing)
                 {
+                    if (shouldDisposeConnection)
+                    {
+                        service.Dispose();
+                    }
                     // Nothing to dispose right now
                     //cancellationTokenSource.Dispose();
                 }

@@ -117,7 +117,8 @@
             fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
 
             // dataminer-package-deploy
-            return await rootCommand.InvokeAsync(args);
+            int value = await rootCommand.InvokeAsync(args);
+            return value;
         }
 
         /// <summary>
@@ -172,24 +173,24 @@
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact";
-    
-                LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
 
-                if (!isDebug)
-                {
-                    logConfig.MinimumLevel.Information();
-                }
-                else
-                {
-                    logConfig.MinimumLevel.Debug();
-                }
+            LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
 
-                var seriLog = logConfig.CreateLogger();
+            if (!isDebug)
+            {
+                logConfig.MinimumLevel.Information();
+            }
+            else
+            {
+                logConfig.MinimumLevel.Debug();
+            }
 
-                LoggerFactory loggerFactory = new LoggerFactory();
-                loggerFactory.AddSerilog(seriLog);
+            var seriLog = logConfig.CreateLogger();
 
-                var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+            LoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddSerilog(seriLog);
+
+            var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
             try
             {
                 IArtifact artifact;

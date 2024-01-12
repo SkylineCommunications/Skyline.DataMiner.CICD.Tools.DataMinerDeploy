@@ -5,7 +5,7 @@
     /// <summary>
     /// Represents a service that can connect and perform installations to a DataMiner agent.
     /// </summary>
-    public interface IDataMinerService
+    public interface IDataMinerService: IDisposable
     {
         /// <summary>
         /// Install a DataMiner protocol (aka Connector, driver) package (.dmprotocol). This call will wait on the installation to complete.
