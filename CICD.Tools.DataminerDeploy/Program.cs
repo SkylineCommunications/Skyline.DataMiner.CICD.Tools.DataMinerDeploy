@@ -9,6 +9,7 @@
     using Microsoft.Extensions.Logging;
 
     using Serilog;
+    using Serilog.Core;
 
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
     using Skyline.DataMiner.CICD.Tools.Reporter;
@@ -172,7 +173,6 @@
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact";
-
             try
             {
                 LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();

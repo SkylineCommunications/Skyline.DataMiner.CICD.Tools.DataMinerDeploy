@@ -80,7 +80,7 @@
                 }
                 else
                 {
-                    logger.LogDebug("Finished Installation of protocol package.");
+                    logger.LogDebug($"Finished Installation of Connector {protocol}.");
                 }
             }
             else
@@ -106,7 +106,7 @@
             string id = helper.UploadAppPackage(packageFilePath);
             logger.LogDebug($"Finished Uploading. Starting Installation...");
             helper.InstallApp(id);
-            logger.LogDebug("Finished Installation of application package.");
+            logger.LogDebug($"Finished Installation of application package with name ({appName}) and version ({appVersion}).");
         }
 
         public void InstallLegacyStyleAppPackages(string package, TimeSpan timeout)
@@ -177,7 +177,7 @@
                 }
                 else
                 {
-                    logger.LogDebug("Finished Installation of application package.");
+                    logger.LogDebug($"Finished Installation and agent restart for legacy application package {package}.");
                 }
 #pragma warning restore S2583 // Conditionally executed code should be reachable
             }

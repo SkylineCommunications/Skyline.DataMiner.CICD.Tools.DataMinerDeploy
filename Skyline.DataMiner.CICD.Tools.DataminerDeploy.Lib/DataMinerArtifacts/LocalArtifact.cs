@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
 
     using Skyline.DataMiner.CICD.FileSystem;
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerArtifacts;
@@ -101,6 +102,8 @@
                         break;
                 }
 
+                DeployedPackage output = new DeployedPackage("succeeded");
+                logger.LogInformation(JsonConvert.SerializeObject(output));
                 return true;
             }).TimeoutAfter(timeout);
         }

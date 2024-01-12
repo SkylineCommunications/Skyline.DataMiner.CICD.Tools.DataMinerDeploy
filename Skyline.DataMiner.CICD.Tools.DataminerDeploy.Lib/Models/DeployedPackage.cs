@@ -16,6 +16,7 @@
 
         /// <summary>
         /// The status of the deployment.
+        /// succeeded, error, timeout
         /// </summary>
         public string Status { get; }
     }
