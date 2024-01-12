@@ -12,6 +12,7 @@
 
     using Microsoft.Extensions.Logging;
 
+    using Skyline.DataMiner.CICD.Common;
     using Skyline.DataMiner.CICD.FileSystem;
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerService.SLNet;
     using Skyline.DataMiner.Net;
@@ -265,7 +266,7 @@
             return cleanedCount;
         }
 
-        private string GetAgentVersion()
+        private DataMinerVersion GetAgentVersion()
         {
             try
             {
@@ -274,7 +275,9 @@
 
                 if (buildInfoResponse != null && buildInfoResponse.Agents.Length > 0)
                 {
-                    string rawVersion = buildInfoResponse.Agents[0].RawVersion;
+                    var agentInfo = buildInfoResponse.Agents[0];
+                    Version version = new Version(agentInfo.VersionPartMajor, agentInfo.VersionPartMinor, agentInfo.VersionPartMonth, agentInfo.VersionPartWeek);
+                    var rawVersion = new DataMinerVersion(version, (uint)agentInfo.UpgradeBuildID);
                     return rawVersion;
                 }
             }
@@ -284,7 +287,7 @@
                 // best effort, still try the installation.
             }
 
-            return String.Empty;
+            return null;
         }
 
         /// <summary>
@@ -293,7 +296,7 @@
         /// <param name="expectedMinimum">The expected minimum version.</param>
         /// <param name="version">The version to compare.</param>
         /// <returns><c>true</c> if the provided version is higher than the specified minimum version number; otherwise, <c>false</c>.</returns>
-        private bool IsVersionHigherOrEqual(string expectedMinimum, string version)
+        private bool IsVersionHigherOrEqual(DataMinerVersion expectedMinimum, DataMinerVersion version)
         {
             if (expectedMinimum == null || version == null)
             {
@@ -307,18 +310,7 @@
 
             try
             {
-                int[] versionParts = ParseVersionNumbers(version);
-                int[] minimumParts = ParseVersionNumbers(expectedMinimum);
-
-                for (int i = 0; i < 4; i++)
-                {
-                    int versionPart = versionParts[i];
-                    int minimumVersionPart = minimumParts[i];
-                    if (versionPart > minimumVersionPart)
-                    {
-                        return true;
-                    }
-                }
+                return version >= expectedMinimum;
             }
             catch (Exception e)
             {
@@ -326,8 +318,6 @@
                 // best effort, still try the installation.
                 return true;
             }
-
-            return false;
         }
 
         private (string appName, string appVersion, int appBuild) LoadAppPackage(string fullPath)
@@ -419,16 +409,17 @@
             // At that case we'll best effort try the upgrade and let any exceptions bubble up from the core if they would happen.
             // The goal of the validation is to stop the code (the core software will do that), it's to make a clear error message to the user if we detect an invalid version.
 
-            string minimumRequired = "10.3.0.0";
+            Version v = new Version("10.3.0.0");
+            DataMinerVersion minimumRequired = new DataMinerVersion(v, 12948);
             var remoteAgentVersion = GetAgentVersion();
 
-            if (!String.IsNullOrWhiteSpace(remoteAgentVersion) && !IsVersionHigherOrEqual(minimumRequired, remoteAgentVersion))
+            if (remoteAgentVersion!= null && !IsVersionHigherOrEqual(minimumRequired, remoteAgentVersion))
             {
                 throw new InvalidOperationException($"Cannot install legacy application package. Current DataMiner version {remoteAgentVersion} is not higher or equal to the minimum required DataMiner version {minimumRequired}. Please upgrade your agent to use this call.");
             }
             else
             {
-                logger.LogDebug($"Checking Requirements: OK, DataMiner version {remoteAgentVersion} is higher or equal to the minimum required version {minimumRequired}...");
+                logger.LogDebug($"Checking Requirements: OK, DataMiner version {remoteAgentVersion?.ToString() ?? "unknown"} is higher or equal to the minimum required version {minimumRequired}...");
             }
         }
     }
