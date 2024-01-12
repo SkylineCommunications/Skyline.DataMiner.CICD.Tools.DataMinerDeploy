@@ -1,39 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<PackAsTool>true</PackAsTool>
-		<ToolCommandName>dataminer-package-deploy</ToolCommandName>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-		<AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</AssemblyName>
-		<RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</RootNamespace>
-		<PackageTags>Skyline;DataMiner;CICD</PackageTags>
-		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageIcon>Icon.png</PackageIcon>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Authors>SkylineCommunications</Authors>
-		<Company>Skyline Communications</Company>
-		<Description>Deploys a package to DataMiner from the catalog or directly.</Description>
-	</PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dataminer-package-deploy</ToolCommandName>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</AssemblyName>
+    <RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</RootNamespace>
+    <PackageTags>Skyline;DataMiner;CICD</PackageTags>
+    <PackageProjectUrl>https://skyline.be</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIcon>Icon.png</PackageIcon>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>SkylineCommunications</Authors>
+    <Company>Skyline Communications</Company>
+    <Description>Deploys a package to DataMiner from the catalog or directly from an artifact.</Description>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="" />
-		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
-		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-		<PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.1" />
-		<PackageReference Include="Skyline.DataMiner.CICD.Tools.Reporter" Version="1.0.1" />
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib\CICD.Tools.DataMinerDeploy.Lib.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2" />
+    <PackageReference Include="Skyline.DataMiner.CICD.Tools.Reporter" Version="1.0.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib\CICD.Tools.DataMinerDeploy.Lib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="CICD.Tools.DataMinerDeployTests" />
+  </ItemGroup>
 </Project>

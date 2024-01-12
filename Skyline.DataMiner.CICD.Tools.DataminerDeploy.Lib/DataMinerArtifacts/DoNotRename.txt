@@ -1,0 +1,2 @@
+﻿Do not rename DataMinerArtifacts to Artifacts.
+The folder Artifacts gets ignored by GIT.
