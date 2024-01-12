@@ -9,7 +9,6 @@
     using Microsoft.Extensions.Logging;
 
     using Serilog;
-    using Serilog.Core;
 
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
     using Skyline.DataMiner.CICD.Tools.Reporter;
@@ -168,13 +167,12 @@
             return cleanArtifactId;
         }
 
-        private static async Task ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
+        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact";
-            try
-            {
+    
                 LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
 
                 if (!isDebug)
@@ -192,7 +190,8 @@
                 loggerFactory.AddSerilog(seriLog);
 
                 var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
-
+            try
+            {
                 IArtifact artifact;
 
                 if (String.IsNullOrWhiteSpace(dataminerPassword))
@@ -218,10 +217,13 @@
                     if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
                     {
                         devopsMetricsMessage += "|Status:OK";
+                        return 0;
                     }
                     else
                     {
                         devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+                        logger.LogCritical("Fail-Deployment returned false");
+                        return 1;
                     }
                 }
                 finally
@@ -232,7 +234,8 @@
             catch (Exception ex)
             {
                 devopsMetricsMessage += "|Status:Fail-" + ex.Message;
-                throw;
+                logger.LogCritical(ex.ToString());
+                return 1;
             }
             finally
             {
@@ -251,7 +254,7 @@
             }
         }
 
-        private static async Task ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
+        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
@@ -259,26 +262,26 @@
 
             artifactId = ExtractArtifactId(artifactId);
 
-            try
 
+            LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+            if (!isDebug)
             {
-                LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
-                if (!isDebug)
-                {
-                    logConfig.MinimumLevel.Information();
-                }
-                else
-                {
-                    logConfig.MinimumLevel.Debug();
-                }
+                logConfig.MinimumLevel.Information();
+            }
+            else
+            {
+                logConfig.MinimumLevel.Debug();
+            }
 
-                var seriLog = logConfig.CreateLogger();
+            var seriLog = logConfig.CreateLogger();
 
-                LoggerFactory loggerFactory = new LoggerFactory();
-                loggerFactory.AddSerilog(seriLog);
+            LoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddSerilog(seriLog);
 
-                var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+            var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
 
+            try
+            {
                 IArtifact artifact;
 
                 if (String.IsNullOrWhiteSpace(dmCatalogToken))
@@ -304,10 +307,13 @@
                     if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
                     {
                         devopsMetricsMessage += "|Status:OK";
+                        return 0;
                     }
                     else
                     {
                         devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+                        logger.LogCritical("Fail-Deployment returned false");
+                        return 1;
                     }
                 }
                 finally
@@ -318,7 +324,8 @@
             catch (Exception ex)
             {
                 devopsMetricsMessage += "|Status:Fail-" + ex.Message;
-                throw;
+                logger.LogCritical(ex.ToString());
+                return 1;
             }
             finally
             {

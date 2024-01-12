@@ -124,7 +124,8 @@ The second option can be beneficial on a static server such as Jenkins or your l
 Running as Administrator:
 ```console
 dotnet tool install -g Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
-WinEncryptedKeys --name "DATAMINER_CATALOG_TOKEN_ENCRYPTED" --value "MyTokenHere"
+WinEncryptedKeys --name "DATAMINER_DEPLOY_USER_ENCRYPTED" --value "MyDmaUsername"
+WinEncryptedKeys --name "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" --value "MyPassword"
 ```
 
 > **Note**

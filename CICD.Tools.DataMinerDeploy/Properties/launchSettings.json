@@ -2,7 +2,7 @@
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
       "commandName": "Project",
-      "commandLineArgs": "from-artifact \r\n--path-to-artifact \"S:\\Public\\Squad\\Acquisition\\DmApps\\CleanupDmapp\\CleanFullAgent.dmapp\"\r\n--dm-server-location \"dms-it-dev.skyline.local\"\r\n--dm-user \"DeployTestUser2\" \r\n--dm-password \"Test123Test123\"\r\n--debug\r\n\r\n"
+      "commandLineArgs": "from-artifact \r\n--path-to-artifact \"C:\\Users\\JANS\\Downloads\\Meinberg_LANTIME_IMS-SCG_1_0_1_3.dmprotocol\"\r\n--dm-server-location \"dms-it-dev.skyline.local\"\r\n--debug\r\n\r\n"
     }
   }
 }
