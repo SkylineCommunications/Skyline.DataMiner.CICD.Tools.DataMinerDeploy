@@ -94,6 +94,9 @@ You can deploy 3 types of packages:
 > Usage of the Skyline.DataMiner.CICD.Tools.Packager tool or downloading from the catalog will not result in Legacy packages.
 > Legacy packages come from deprecated Package Creation software or manual creation.
 
+> **Note**
+> Deployment with a local artifact requires a minimum DataMiner version of  Release 10.3.0  or feature release 10.3.2
+
 
  ### Basic Command
 

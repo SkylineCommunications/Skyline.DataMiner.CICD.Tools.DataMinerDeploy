@@ -30,7 +30,6 @@
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
     <PackageReference Include="Skyline.DataMiner.CICD.FileSystem" Version="1.0.2" />
     <PackageReference Include="Skyline.DataMiner.CICD.Tools.WinEncryptedKeys.Lib" Version="1.0.2" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>

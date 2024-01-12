@@ -27,8 +27,11 @@
             // Minimum Supported DataMiner is then: Main Release 10.3.0   february 2023   feature release 10.3.2
             
             Connection = new GRPCConnection(hostname);
+            Connection.PollingRequestTimeout = 120000;
+            Connection.ConnectTimeoutTime = 120000;
+            Connection.AuthenticateMessageTimeout = 120000;
+
             Connection.Authenticate(username, password);
-            Connection.Subscribe(new SubscriptionFilter());
 
             EndPoint = hostname;
         }
@@ -40,32 +43,6 @@
         public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password)
         {
             return new SLNetCommunication(endUrlPoint, username, password);
-        }
-
-        public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password, int retryInterval, int retries)
-        {
-            int i = 0;
-            while (true)
-            {
-                try
-                {
-                    SLNetCommunication connection = new SLNetCommunication(endUrlPoint, username, password);
-                    return connection;
-                }
-                catch (Exception e)
-                {
-                    if (i == retries)
-                    {
-                        string message = $"Error while creating connection after {retries} retries. Last exception :\n{e}";
-                        throw new TimeoutException(message);
-                    }
-                    else
-                    {
-                        i++;
-                        Thread.Sleep(retryInterval);
-                    }
-                }
-            }
         }
 
         public void Dispose()

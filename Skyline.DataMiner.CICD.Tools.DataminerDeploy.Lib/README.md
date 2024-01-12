@@ -4,6 +4,9 @@
 
 Library code containing ways to deploy an artifact to DataMiner.
 
+> **Note**
+> Deployment with a local artifact requires a minimum DataMiner version of  Release 10.3.0  or feature release 10.3.2
+
 ### About DataMiner
 
 DataMiner is a transformational platform that provides vendor-independent control and monitoring of devices and services. Out of the box and by design, it addresses key challenges such as security, complexity, multi-cloud, and much more. It has a pronounced open architecture and powerful capabilities enabling users to evolve easily and continuously.

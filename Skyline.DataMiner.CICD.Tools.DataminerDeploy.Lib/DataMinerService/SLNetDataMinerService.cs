@@ -45,7 +45,7 @@
         {
             if (slnet == null)
             {
-                throw new InvalidOperationException("Please call .Connect before installing any packages.");
+                throw new InvalidOperationException($"Please call {nameof(TryConnect)} before installing any packages.");
             }
 
             if (protocol == null)
@@ -93,7 +93,7 @@
         {
             if (slnet == null)
             {
-                throw new InvalidOperationException("Please call .Connect before installing any packages.");
+                throw new InvalidOperationException($"Please call {nameof(TryConnect)} before installing any packages.");
             }
 
             var helper = new AppPackageHelper(slnet.SendMessage);
@@ -113,7 +113,7 @@
         {
             if (slnet == null)
             {
-                throw new InvalidOperationException("Please call .Connect before installing any packages.");
+                throw new InvalidOperationException($"Please call {nameof(TryConnect)} before installing any packages.");
             }
 
             VerifyMinimumDataMinerVersion();
@@ -191,9 +191,6 @@
             }
 
             slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
-            slnet.Connection.PollingRequestTimeout = 120000;
-            slnet.Connection.ConnectTimeoutTime = 120000;
-            slnet.Connection.AuthenticateMessageTimeout = 120000;
             return true;
         }
 
