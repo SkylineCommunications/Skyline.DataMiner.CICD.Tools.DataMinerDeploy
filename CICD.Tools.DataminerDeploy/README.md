@@ -95,7 +95,7 @@ You can deploy 3 types of packages:
 > Legacy packages come from deprecated Package Creation software or manual creation.
 
 > **Note**
-> Deployment with a local artifact requires a minimum DataMiner version of  Release 10.3.0  or feature release 10.3.2
+> Deployment with a local artifact requires DataMiner 10.3.0/10.3.2 or higher.
 
 
  ### Basic Command
