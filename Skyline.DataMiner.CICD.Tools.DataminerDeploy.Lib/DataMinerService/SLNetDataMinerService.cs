@@ -200,7 +200,7 @@
         {
             if (!disposedValue)
             {
-                if (disposing)
+                if (disposing && slnet != null)
                 {
                     slnet.Dispose();
                 }
@@ -413,7 +413,7 @@
             DataMinerVersion minimumRequired = new DataMinerVersion(v, 12948);
             var remoteAgentVersion = GetAgentVersion();
 
-            if (remoteAgentVersion!= null && !IsVersionHigherOrEqual(minimumRequired, remoteAgentVersion))
+            if (remoteAgentVersion != null && !IsVersionHigherOrEqual(minimumRequired, remoteAgentVersion))
             {
                 throw new InvalidOperationException($"Cannot install legacy application package. Current DataMiner version {remoteAgentVersion} is not higher or equal to the minimum required DataMiner version {minimumRequired}. Please upgrade your agent to use this call.");
             }
