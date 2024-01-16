@@ -71,8 +71,28 @@
                     throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
                 }
 
-                var actualUser = String.IsNullOrWhiteSpace(dataminerUser) ? userFromEnv : dataminerUser;
-                var actualPassword = String.IsNullOrWhiteSpace(dataminerPassword) ? pwFromEnv : dataminerPassword;
+                string actualUser;
+                string actualPassword;
+                if (!String.IsNullOrWhiteSpace(dataminerUser))
+                {
+                    actualUser = dataminerUser;
+                    logger.LogDebug("User provided through arguments, this takes precedence over environment variables.");
+                }
+                else
+                {
+                    actualUser = userFromEnv;
+                }
+
+                if (!String.IsNullOrWhiteSpace(dataminerPassword))
+                {
+                    actualPassword = dataminerPassword;
+                    logger.LogDebug("Password provided through arguments, this takes precedence over environment variables.");
+                }
+                else
+                {
+                    actualPassword = pwFromEnv;
+                }
+
                 if (String.IsNullOrEmpty(actualUser) || String.IsNullOrEmpty(actualPassword))
                 {
                     throw new InvalidOperationException("Username or password is empty. Expected credentials either provided through arguments or with Environment Variables DATAMINER_DEPLOY_USER_ENCRYPTED/DATAMINER_DEPLOY_PASSWORD_ENCRYPTED or DATAMINER_DEPLOY_USER/DATAMINER_DEPLOY_PASSWORD.");
