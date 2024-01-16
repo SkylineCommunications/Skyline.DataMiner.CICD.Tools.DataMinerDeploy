@@ -4,8 +4,23 @@
 
 Library code containing ways to deploy an artifact to DataMiner.
 
-> **Note**
-> Deployment with a local artifact requires DataMiner 10.3.0/10.3.2 or higher.
+### Limitations
+
+The deployment tool attempts to work with as many scenarios possible.
+There are currently however a couple of limitations.
+
+#### Local Artifacts
+
+- Deployment with a local artifact requires DataMiner 10.3.0/10.3.2 or higher.
+
+- Deployment with a local artifact only works from windows machines.
+
+- Deployment with a local artifact of type: legacy style application package, to your localhost is currently not supported.
+
+
+#### Catalog
+
+- Deployment from the cloud currently only works for private artifacts. Meaning you need to use an agent key of the same organization (admin.dataminer.services) that was used to perform the upload.
 
 ### About DataMiner
 

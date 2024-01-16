@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using System.Net;
+    using System.Runtime.InteropServices;
     using System.Text;
     using System.Xml.Linq;
 
@@ -152,6 +153,11 @@
                     ip = ipAddress.ToString();
                 }
 
+                if(ip == "127.0.0.1")
+                {
+                    throw new InvalidOperationException("Unsupported: Legacy style local artifact deployment to localhost. As an alternative, please deploy from the catalog or deploy from a remote server.");
+                }
+
                 var watcher = manager.AddStandAloneAgentToUpgrade(ip);
 
                 // Callback
@@ -189,6 +195,11 @@
             if (slnet != null)
             {
                 return false;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                throw new InvalidOperationException("Unsupported on Linux: Deployment of local artifacts. Please run this on a windows system or use the deployment from catalog as an alternative.");
             }
 
             slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);

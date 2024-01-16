@@ -5,12 +5,29 @@
 Deploys a package to DataMiner from the cloud or directly from a local artifact.
 
 > **Note**
-> Deployment from the cloud currently only works for private artifacts. Meaning you need to use an agent key of the same organization (admin.dataminer.services) that was used to perform the upload.
-
-> **Note**
 > Usage of this tool is tracked through non-personal metrics provided through a single https call on each use.
 >
 > These metrics may include, but are not limited to, the frequency of use and the primary purposes for which the Software is employed (e.g., automation, protocol analysis, visualization, etc.). By using the Software, you agree to allow Skyline to collect and analyze such metrics for the purpose of improving and enhancing the Software.
+
+
+### Limitations
+
+The deployment tool attempts to work with as many scenarios possible.
+There are currently however a couple of limitations.
+
+#### Local Artifacts
+
+- Deployment with a local artifact requires DataMiner 10.3.0/10.3.2 or higher.
+
+- Deployment with a local artifact only works from windows machines.
+
+- Deployment with a local artifact of type: legacy style application package, to your localhost is currently not supported.
+
+
+#### Catalog
+
+- Deployment from the cloud currently only works for private artifacts. Meaning you need to use an agent key of the same organization (admin.dataminer.services) that was used to perform the upload.
+
 
 ### About DataMiner
 
