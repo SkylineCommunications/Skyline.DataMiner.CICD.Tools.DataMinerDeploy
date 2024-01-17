@@ -17,7 +17,7 @@
         /// <summary>
         /// Deploys and artifact to the system and waits until timeout for deployment.
         /// </summary>
-        /// <returns>True if deployment was successful.</returns>
+        /// <returns><c>true</c> if deployment was successful; otherwise, <c>false</c>.</returns>
         Task<bool> DeployAsync(TimeSpan timeout);
     }
 }

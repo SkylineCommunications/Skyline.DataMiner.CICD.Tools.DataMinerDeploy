@@ -65,12 +65,12 @@
             var deploying = await service.DeployPackageAsync(artifactIdentifier, catalogAgentToken, cancellationTokenSource.Token);
             if (deploying == null)
             {
-                throw new InvalidOperationException($"Start Deployment of {artifactIdentifier} failed. CatalogService returned a null");
+                throw new InvalidOperationException($"Start deployment of {artifactIdentifier} failed. CatalogService returned null.");
             }
 
-            logger.LogDebug("Deployment Started...");
+            logger.LogDebug("Deployment started...");
             var output = await ConfirmSuccesfullDeploymentAsync(catalogAgentToken, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(2), timeout, deploying);
-            logger.LogDebug("Deployment Finished.");
+            logger.LogDebug("Deployment finished.");
             logger.LogInformation(JsonConvert.SerializeObject(output));
 
             return output.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase);
@@ -124,12 +124,12 @@
             }
             catch (TimeoutException)
             {
-                throw new TimeoutException($"Deployment Status was never succeeded, error or timeout after trying for {maxTimeout} seconds");
+                throw new TimeoutException($"Deployment status was never 'succeeded', 'error' or 'timeout' after trying for {maxTimeout} seconds.");
             }
 
             if (deployedPackage.Status.Equals("Timeout", StringComparison.InvariantCultureIgnoreCase) || deployedPackage.Status.Equals("Error", StringComparison.InvariantCultureIgnoreCase))
             {
-                logger.LogCritical($"Deployment Failed with status {deployedPackage.Status} for artifact {deployingPackage.ArtifactId}");
+                logger.LogCritical($"Deployment Failed with status {deployedPackage.Status} for artifact {deployingPackage.ArtifactId}.");
             }
 
             return deployedPackage;
@@ -153,7 +153,7 @@
 
                         if (!String.IsNullOrWhiteSpace(keyFromWinEncryptedKeys))
                         {
-                            logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' created by WinEncryptedKeys.");
+                            logger.LogDebug("OK: Found token in environment variable: 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' created by WinEncryptedKeys.");
                             keyFromEnv = keyFromWinEncryptedKeys;
 
                             // Do not return. keyFromEnv Can be overwritten by the presence of DATAMINER_CATALOG_TOKEN
@@ -172,11 +172,11 @@
             {
                 if (!String.IsNullOrWhiteSpace(keyFromEnv))
                 {
-                    logger.LogDebug("OK: Overriding 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' with found token in Env Variable: 'DATAMINER_CATALOG_TOKEN'.");
+                    logger.LogDebug("OK: Overriding 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' with found token in environment variable: 'DATAMINER_CATALOG_TOKEN'.");
                 }
                 else
                 {
-                    logger.LogDebug("OK: Found token in Env Variable: 'DATAMINER_CATALOG_TOKEN'.");
+                    logger.LogDebug("OK: Found token in environment variable: 'DATAMINER_CATALOG_TOKEN'.");
                 }
 
                 keyFromEnv = keyFromEnvironment;

@@ -96,7 +96,7 @@
             };
 
             // Assert
-            await deployAction.Should().ThrowAsync<TimeoutException>().WithMessage("*Status was never succeeded, error or timeout*");
+            await deployAction.Should().ThrowAsync<TimeoutException>().WithMessage("*Status was never 'succeeded', 'error' or 'timeout'*");
         }
 
         [TestMethod]

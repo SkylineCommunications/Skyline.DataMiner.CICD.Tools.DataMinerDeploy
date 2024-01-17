@@ -52,7 +52,6 @@
             originalPw_encrypt = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED", EnvironmentVariableTarget.Machine) ?? "";
             originalPw = Environment.GetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD") ?? "";
 
-
             Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_USER", "");
             Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_USER_ENCRYPTED", "", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD", "");

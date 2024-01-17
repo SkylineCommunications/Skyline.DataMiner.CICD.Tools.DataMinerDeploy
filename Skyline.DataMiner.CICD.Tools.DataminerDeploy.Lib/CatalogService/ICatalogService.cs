@@ -9,7 +9,7 @@
     public interface ICatalogService
     {
         /// <summary>
-        /// Starts deployment of an artifact from an external store, to a cloud-connected agent. Use GetDeployedPackageAsync to check if it's finished.
+        /// Starts deployment of an artifact from an external store, to a cloud-connected Agent. Use <see cref="GetDeployedPackageAsync"/> to check if it is finished.
         /// </summary>
         /// <param name="artifactIdentifier">The unique cloud artifact identifier as returned from performing a catalog-upload.</param>
         /// <param name="key">The key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services.</param>

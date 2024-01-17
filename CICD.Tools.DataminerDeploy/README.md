@@ -72,8 +72,8 @@ dataminer-package-deploy from-catalog --artifact-id "dmscript/f764389f-5404-4c32
 ```
  
  There are 2 options to store the key in an environment variable:
-- key stored as an Environment Variable called "DATAMINER_CATALOG_TOKEN". (unix/win)
-- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_CATALOG_TOKEN_ENCRYPTED" (windows only)
+- key stored as an environment variable called "DATAMINER_CATALOG_TOKEN". (Unix/Windows)
+- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_CATALOG_TOKEN_ENCRYPTED" (Windows only)
 
 The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (github, gitlab, azure, ...)
 The second option can be beneficial on a static server such as Jenkins or your local machine (windows only). It adds additional encryption to the environment variable only allowing decryption on the same machine. 
@@ -132,10 +132,10 @@ dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-locatio
 ```
  
  There are 2 options to store the key in an environment variable:
-- key stored as an Environment Variable called "DATAMINER_DEPLOY_USER" and DATAMINER_DEPLOY_PASSWORD. (unix/win)
-- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_DEPLOY_USER_ENCRYPTED" and "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" (windows only)
+- key stored as an Environment Variable called "DATAMINER_DEPLOY_USER" and DATAMINER_DEPLOY_PASSWORD. (Unix/Windows)
+- key configured one-time using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "DATAMINER_DEPLOY_USER_ENCRYPTED" and "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" (Windows only)
 
-The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (github, gitlab, azure, ...)
+The first option is commonplace for environment setups in cloud-based CI/CD Pipelines (GitHub Actions, GitLab pipelines, Azure pipelines, ...)
 The second option can be beneficial on a static server such as Jenkins or your local machine (windows only). It adds additional encryption to the environment variable only allowing decryption on the same machine. 
 
 Running as Administrator:

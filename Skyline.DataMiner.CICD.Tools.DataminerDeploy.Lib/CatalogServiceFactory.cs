@@ -25,7 +25,7 @@
             {
                 apiBaseUrl = $"https://api-{environment}.dataminer.services/{environment}/api";
                 logger.LogDebug("Found the \"Skyline-deploy-action-namespace\" environment variable");
-                logger.LogDebug("Setting the base url for the api to: {0}", apiBaseUrl);
+                logger.LogDebug("Setting the base URL for the API to: {0}", apiBaseUrl);
             }
             else
             {

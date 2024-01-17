@@ -6,7 +6,7 @@
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.DataMinerService;
 
     /// <summary>
-    /// Factory that creates instances of <see cref="IDataMinerService"/> to communicate directly with a DataMiner agent.
+    /// Factory that creates instances of <see cref="IDataMinerService"/> to communicate directly with a DataMiner Agent.
     /// </summary>
     public static class DataMinerServiceFactory
     {

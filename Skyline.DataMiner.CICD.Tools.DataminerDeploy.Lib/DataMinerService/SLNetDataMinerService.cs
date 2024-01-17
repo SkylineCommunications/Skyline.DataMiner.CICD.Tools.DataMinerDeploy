@@ -82,7 +82,7 @@
                 }
                 else
                 {
-                    logger.LogDebug($"Finished Installation of Connector {protocol}.");
+                    logger.LogDebug($"Finished installation of connector {protocol}.");
                 }
             }
             else
@@ -106,9 +106,9 @@
             logger.LogDebug($"Cleaning {cleaned} previous uploaded packages with same name ({appName}) and version ({appVersion})");
             logger.LogDebug($"Uploading {appName} to {slnet.EndPoint}...");
             string id = helper.UploadAppPackage(packageFilePath);
-            logger.LogDebug($"Finished Uploading. Starting Installation...");
+            logger.LogDebug($"Finished uploading. Starting installation...");
             helper.InstallApp(id);
-            logger.LogDebug($"Finished Installation of application package with name ({appName}) and version ({appVersion}).");
+            logger.LogDebug($"Finished installation of application package with name ({appName}) and version ({appVersion}).");
         }
 
         public void InstallLegacyStyleAppPackages(string package, TimeSpan timeout)
@@ -143,7 +143,7 @@
 
                 manager.SetUpgradeOptions(upgradeOptions);
 
-                // Translate domain name to ip if possible
+                // Translate domain name to IP if possible
                 string ip = slnet.EndPoint;
 
                 // Note, this replaces the default slnet.Connection.ResolvedConnectIP that won't work in .NETStandard
@@ -169,7 +169,7 @@
                 var task = System.Threading.Tasks.Task.Run(() =>
                 {
                     watcher.StartWatching();
-                    logger.LogDebug($"Installing {package} to {slnet.EndPoint} and restarting the agent...");
+                    logger.LogDebug($"Installing {package} to {slnet.EndPoint} and restarting the Agent...");
                     manager.LaunchUploadAndUpgrade();
                     watcher.WaitForUpgradeCompletion();
                     watcher.StopWatching();
@@ -180,11 +180,11 @@
 #pragma warning disable S2583 // Conditionally executed code should be reachable <--- Is set to true inside of the task
                 if (!upgradeOk)
                 {
-                    throw new TimeoutException("DMA upgrade did not complete within " + timeout + " minutes. See 'Upgrade Log Table' for more info.");
+                    throw new TimeoutException("Agent upgrade did not complete within " + timeout + " minutes. See 'Upgrade Log Table' for more info.");
                 }
                 else
                 {
-                    logger.LogDebug($"Finished Installation and agent restart for legacy application package {package}.");
+                    logger.LogDebug($"Finished installation and agent restart for legacy application package {package}.");
                 }
 #pragma warning restore S2583 // Conditionally executed code should be reachable
             }
@@ -199,7 +199,7 @@
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                throw new InvalidOperationException("Unsupported on Linux: Deployment of local artifacts. Please run this on a windows system or use the deployment from catalog as an alternative.");
+                throw new InvalidOperationException("Unsupported on Linux: Deployment of local artifacts. Please run this on a Windows system or use the deployment from catalog as an alternative.");
             }
 
             slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
@@ -218,38 +218,6 @@
 
                 disposedValue = true;
             }
-        }
-
-        /// <summary>
-        /// Parses the version number string into a string array.
-        /// </summary>
-        /// <param name="versionNumber">The version number.</param>
-        /// <returns>String array containing the parsed version number.</returns>
-        /// <exception cref="ArgumentException">When the version number is not in the expected format of a.b.c.d where a,b,c and d are integers.</exception>
-        private static int[] ParseVersionNumbers(string versionNumber)
-        {
-            string[] splitDot = { "." };
-            string[] versionParts = versionNumber.Split(splitDot, StringSplitOptions.None);
-            if (versionParts.Length != 4)
-            {
-                throw new ArgumentException($"versionNumber {versionNumber} is not in expected format.");
-            }
-
-            if (!Int32.TryParse(versionParts[0], out int versionPartMajor) ||
-                !Int32.TryParse(versionParts[2], out int versionPartMonth) ||
-                !Int32.TryParse(versionParts[1], out int versionPartMinor) ||
-                !Int32.TryParse(versionParts[3], out int versionPartWeek))
-            {
-                throw new ArgumentException($"versionNumber {versionNumber} is not in expected format.");
-            }
-
-            int[] versionPartNumbers = new int[4];
-            versionPartNumbers[0] = versionPartMajor;
-            versionPartNumbers[1] = versionPartMinor;
-            versionPartNumbers[2] = versionPartMonth;
-            versionPartNumbers[3] = versionPartWeek;
-
-            return versionPartNumbers;
         }
 
         private int CleanPreviousUploaded(AppPackageHelper helper, string appName, string version)
@@ -426,11 +394,11 @@
 
             if (remoteAgentVersion != null && !IsVersionHigherOrEqual(minimumRequired, remoteAgentVersion))
             {
-                throw new InvalidOperationException($"Cannot install legacy application package. Current DataMiner version {remoteAgentVersion} is not higher or equal to the minimum required DataMiner version {minimumRequired}. Please upgrade your agent to use this call.");
+                throw new InvalidOperationException($"Cannot install legacy application package. Current DataMiner version {remoteAgentVersion} is not higher or equal to the minimum required DataMiner version {minimumRequired}. Please upgrade your Agent to use this call.");
             }
             else
             {
-                logger.LogDebug($"Checking Requirements: OK, DataMiner version {remoteAgentVersion?.ToString() ?? "unknown"} is higher or equal to the minimum required version {minimumRequired}...");
+                logger.LogDebug($"Checking requirements: OK, DataMiner version {remoteAgentVersion?.ToString() ?? "unknown"} is higher or equal to the minimum required version {minimumRequired}...");
             }
         }
     }

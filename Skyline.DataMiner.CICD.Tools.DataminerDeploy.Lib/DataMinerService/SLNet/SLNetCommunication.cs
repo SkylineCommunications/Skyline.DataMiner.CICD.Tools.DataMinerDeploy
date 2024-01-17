@@ -2,7 +2,6 @@
 {
     using System;
     using System.Linq;
-    using System.Threading;
 
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.GRPCConnection;
@@ -51,7 +50,6 @@
         {
             Connection.Dispose();
         }
-
 
         public DMSMessage[] SendMessage(DMSMessage message)
         {

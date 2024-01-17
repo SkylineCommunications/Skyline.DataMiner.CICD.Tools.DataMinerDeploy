@@ -54,11 +54,11 @@
             }
             catch (HttpOperationException e)
             {
-                throw new InvalidOperationException($"Azure Artifact Deploy failed with message {e.Response.Content}", e);
+                throw new InvalidOperationException($"Azure artifact deploy failed with message {e.Response.Content}", e);
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Couldn't deploy the package {e}", e);
+                throw new InvalidOperationException($"Could not deploy the package {e}", e);
             }
 
             if (res.Response.IsSuccessStatusCode)
@@ -69,12 +69,12 @@
                     return new DeployingPackage(artifactIdentifier, deploymentId);
                 }
 
-                throw new InvalidOperationException("Received an invalid deployment ID");
+                throw new InvalidOperationException("Received an invalid deployment ID.");
             }
 
             if (res.Response.StatusCode is HttpStatusCode.Forbidden || res.Response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                throw new UnauthorizedAccessException($"The deploy API returned a response with status code {res.Response.StatusCode}");
+                throw new UnauthorizedAccessException($"The deploy API returned a response with status code {res.Response.StatusCode}.");
             }
 
             var responseContent = String.Empty;
@@ -98,16 +98,16 @@
 
             try
             {
-                _logger.LogDebug($"Checking Deployment Status...");
+                _logger.LogDebug($"Checking deployment status...");
                 res = await _artifactDeploymentInfoApi.GetPrivateArtifactDeploymentInfoWithHttpMessagesAsync(deployingPackage.DeploymentId, key);
             }
             catch (HttpOperationException e)
             {
-                throw new InvalidOperationException($"Azure Artifact Deploy Check Status failed with message {e.Response.Content}", e);
+                throw new InvalidOperationException($"Azure artifact deploy check status failed with message {e.Response.Content}", e);
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Couldn't get the deployed package {e.ToString()}", e);
+                throw new InvalidOperationException($"Could not get the deployed package {e.ToString()}", e);
             }
 
             if (res.Response.IsSuccessStatusCode)
@@ -117,12 +117,12 @@
                     return new DeployedPackage(deploymentInfoModel.CurrentState);
                 }
 
-                throw new InvalidOperationException("Received an invalid deployment info response");
+                throw new InvalidOperationException("Received an invalid deployment info response.");
             }
 
             if (res.Response.StatusCode is HttpStatusCode.Forbidden || res.Response.StatusCode is HttpStatusCode.Unauthorized)
             {
-                throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}");
+                throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}.");
             }
 
             var responseContent = String.Empty;
