@@ -19,5 +19,11 @@
         /// </summary>
         /// <returns><c>true</c> if deployment was successful; otherwise, <c>false</c>.</returns>
         Task<bool> DeployAsync(TimeSpan timeout);
+
+        /// <summary>
+        /// Adds a series of actions to attempt after deployment.
+        /// </summary>
+        /// <param name="postDeployActions">An instance of <see cref="PostDeployActions"/> indicating what actions to try performing after deployment.</param>
+        void AddPostDeployActions(PostDeployActions postDeployActions);
     }
 }

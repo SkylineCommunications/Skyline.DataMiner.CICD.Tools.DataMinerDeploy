@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
+
     using Newtonsoft.Json;
 
     using Skyline.DataMiner.CICD.FileSystem;
@@ -26,6 +27,7 @@
         private string pwFromEnv;
         private string userFromEnv;
         private bool shouldDisposeConnection = true;
+        private PostDeployActions postDeployActions;
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
         {
@@ -60,6 +62,15 @@
         public void CancelDeployment()
         {
             throw new InvalidOperationException("Unable to cancel deployment of a local artifact.");
+        }
+
+        /// <summary>
+        /// Adds a series of actions to attempt after deployment.
+        /// </summary>
+        /// <param name="postDeployActions">An instance of <see cref="PostDeployActions"/> indicating what actions to try performing after deployment.</param>
+        public void AddPostDeployActions(PostDeployActions postDeployActions)
+        {
+            this.postDeployActions = postDeployActions;
         }
 
         public async Task<bool> DeployAsync(TimeSpan timeout)
@@ -117,7 +128,7 @@
 
                     case ArtifactTypeEnum.dmprotocol:
                         logger.LogDebug($"Found DataMiner protocol package (.dmprotocol).");
-                        service.InstallDataMinerProtocol(pathToArtifact);
+                        service.InstallDataMinerProtocol(pathToArtifact, postDeployActions?.SetToProduction ?? (false, false));
                         break;
 
                     default:

@@ -250,7 +250,8 @@
             result.Should().BeTrue();
 
             fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
-            fakeService.Verify(p => p.InstallDataMinerProtocol(pathToArtifact));
+            var setToProduction = (false, false);
+            fakeService.Verify(p => p.InstallDataMinerProtocol(pathToArtifact, setToProduction));
         }
     }
 }

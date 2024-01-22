@@ -52,6 +52,15 @@
         }
 
         /// <summary>
+        /// Adds a series of actions to attempt after deployment.
+        /// </summary>
+        /// <param name="postDeployActions">An instance of <see cref="PostDeployActions"/> indicating what actions to try performing after deployment.</param>
+        public void AddPostDeployActions(PostDeployActions postDeployActions)
+        {
+            throw new InvalidOperationException("There is currently no support for additional actions after deployment from the catalog. Such actions are only possible for direct deployment of protocol packages (.dmprotocol).");
+        }
+
+        /// <summary>
         /// Cancels an ongoing deployment. Create a new CatalogArtifact to attempt a new upload.
         /// </summary>
         public void CancelDeployment()

@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
 
     using Serilog;
 
@@ -98,6 +99,33 @@
                 IsRequired = false
             };
 
+            var setToProduction = new Option<bool>(
+            name: "--set-to-production",
+            description: "Only works for protocol packages (.dmprotocol). Will set the deployed connector to production.")
+            {
+                IsRequired = false
+            };
+
+
+            var copyTemplates = new Option<bool>(
+            name: "--copy-templates",
+             description: "Only works for protocol packages (.dmprotocol) you try to set to production. Will copy over templates.")
+            {
+                IsRequired = false
+            };
+
+            var fromArtifactWithPostActions = new Command("from-artifact-with-post-actions", "Deploys a specific protocol package (.dmprotocol) to a DataMiner Agent and performs post-actions such as setting it into production.")
+            {
+                isDebug,
+                pathToArtifact,
+                dataMinerServerLocation,
+                dataminerUser,
+                dataminerPassword,
+                deployTimeout,
+                setToProduction,
+                copyTemplates
+            };
+
             var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local application package (.dmapp) or protocol package (.dmprotocol) to a DataMiner Agent. Warning: if using legacy application packages (.dmapp that you unzip, contains an Update.zip) the remote Agent will perform a restart.")
             {
                 isDebug,
@@ -111,9 +139,12 @@
             // Optionally can add extra subcommands later to deploy from different sources to DataMiner.
             rootCommand.Add(fromArtifact);
             rootCommand.Add(fromCatalog);
+            rootCommand.Add(fromArtifactWithPostActions);
 
             fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
-            fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
+            fromArtifact.SetHandler(ProcessArtifactWithoutActions, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
+
+            fromArtifactWithPostActions.SetHandler(ProcessArtifactWithActions, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, setToProduction, copyTemplates);
 
             // dataminer-package-deploy
             int value = await rootCommand.InvokeAsync(args);
@@ -167,7 +198,20 @@
             return cleanArtifactId;
         }
 
-        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
+        private static async Task<int> ProcessArtifactWithActions(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, bool setToProduction, bool copyTemplates)
+        {
+            PostDeployActions actions = new PostDeployActions();
+            actions.SetToProduction = (true, true);
+            return await ProcessArtifact(isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, actions);
+        }
+
+        private static async Task<int> ProcessArtifactWithoutActions(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
+        {
+            PostDeployActions actions = null;
+            return await ProcessArtifact(isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, actions);
+        }
+
+        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, PostDeployActions actions)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
@@ -202,9 +246,13 @@
                 {
                     artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation, dataminerUser, dataminerPassword);
                 }
-
                 try
                 {
+                    if (actions != null)
+                    {
+                        artifact.AddPostDeployActions(actions);
+                    }
+
                     if (deployTimeout < 0)
                     {
                         deployTimeout = 900; // Default to 15min

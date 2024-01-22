@@ -11,7 +11,8 @@
         /// Installs a DataMiner protocol (aka connector, driver) package (.dmprotocol). This call will wait on the installation to complete.
         /// </summary>
         /// <param name="protocol">The file path to the package.</param>
-        void InstallDataMinerProtocol(string protocol);
+        /// <param name="setToProduction">isTrue is set to <c>true</c> if the protocol should also be set to production; otherwise, <c>false</c>. copyTemplates is <c>true</c> if templates should be copied over; otherwise, <c>false</c>.</param>
+        void InstallDataMinerProtocol(string protocol, (bool isTrue, bool copyTemplates) setToProduction);
 
         /// <summary>
         /// Install a DataMiner application package (.dmapp). This call will wait on the installation to complete.
