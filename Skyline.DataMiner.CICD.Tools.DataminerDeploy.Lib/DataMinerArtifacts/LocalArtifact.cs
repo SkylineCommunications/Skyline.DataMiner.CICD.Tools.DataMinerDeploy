@@ -16,18 +16,18 @@
 
     internal class LocalArtifact : IArtifact
     {
-        private readonly ILogger logger;
         private readonly string dataminerPassword;
         private readonly string dataMinerServerLocation;
         private readonly string dataminerUser;
         private readonly IFileSystem fs;
+        private readonly ILogger logger;
         private readonly string pathToArtifact;
         private readonly IDataMinerService service;
         private bool disposedValue;
-        private string pwFromEnv;
-        private string userFromEnv;
-        private bool shouldDisposeConnection = true;
         private PostDeployActions postDeployActions;
+        private string pwFromEnv;
+        private bool shouldDisposeConnection = true;
+        private string userFromEnv;
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
         {
@@ -59,11 +59,6 @@
         {
         }
 
-        public void CancelDeployment()
-        {
-            throw new InvalidOperationException("Unable to cancel deployment of a local artifact.");
-        }
-
         /// <summary>
         /// Adds a series of actions to attempt after deployment.
         /// </summary>
@@ -71,6 +66,11 @@
         public void AddPostDeployActions(PostDeployActions postDeployActions)
         {
             this.postDeployActions = postDeployActions;
+        }
+
+        public void CancelDeployment()
+        {
+            throw new InvalidOperationException("Unable to cancel deployment of a local artifact.");
         }
 
         public async Task<bool> DeployAsync(TimeSpan timeout)
@@ -166,24 +166,6 @@
             }
         }
 
-        /// <summary>
-        ///  Attempts to find the necessary API key in Environment Variables. In order of priority:
-        ///  <para>- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)</para>
-        ///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)</para>
-        /// </summary>
-        private void TryFindEnvironmentKeys()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Order of priority. Priority for regular environment keys as they are win/unix and industry standard in pipelines
-                userFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_USER_ENCRYPTED") ?? userFromEnv;
-                pwFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED") ?? pwFromEnv;
-
-                userFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_USER") ?? userFromEnv;
-                pwFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_PASSWORD") ?? pwFromEnv;
-            }
-        }
-
         private string TryFindEncryptedEnvironmentKey(string key)
         {
             try
@@ -227,6 +209,24 @@
             }
 
             return userFromEnvironment;
+        }
+
+        /// <summary>
+        ///  Attempts to find the necessary API key in Environment Variables. In order of priority:
+        ///  <para>- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)</para>
+        ///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)</para>
+        /// </summary>
+        private void TryFindEnvironmentKeys()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Order of priority. Priority for regular environment keys as they are win/unix and industry standard in pipelines
+                userFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_USER_ENCRYPTED") ?? userFromEnv;
+                pwFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED") ?? pwFromEnv;
+
+                userFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_USER") ?? userFromEnv;
+                pwFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_PASSWORD") ?? pwFromEnv;
+            }
         }
     }
 }

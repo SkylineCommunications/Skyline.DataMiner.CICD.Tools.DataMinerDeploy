@@ -75,7 +75,6 @@
             Mock<IFileIO> fakeFile = new Mock<IFileIO>();
             fs.Setup(p => p.File).Returns(fakeFile.Object);
 
-
             string pathToArtifact = "fake/path/artifactname.dmapp";
             string dmServerLocation = "fake.host.server";
 
@@ -99,7 +98,6 @@
             Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
 
             fs.Setup(p => p.File).Returns(fakeFile.Object);
-
 
             string pathToArtifact = "TestData/TestNewDmapp.dmapp";
             string dmServerLocation = "fake.host.server";
@@ -170,8 +168,8 @@
             result.Should().BeTrue();
             fakeService.Verify(p => p.TryConnect(dmServerLocation, user, password));
             fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
-
         }
+
         [TestMethod]
         public async Task LocalTest_EnvEncrypedKey_OK()
         {
