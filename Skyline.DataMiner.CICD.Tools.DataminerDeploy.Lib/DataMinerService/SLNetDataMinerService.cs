@@ -55,9 +55,9 @@
             var request = new SetDataMinerInfoMessage
             {
                 ElementID = -1,
-                bInfo1 = int.MaxValue,
-                IInfo1 = int.MaxValue,
-                IInfo2 = int.MaxValue,
+                bInfo1 = Int32.MaxValue,
+                IInfo1 = Int32.MaxValue,
+                IInfo2 = Int32.MaxValue,
                 bInfo2 = copyTemplates ? 1 : 0,
                 What = (int)NotifyType.SetAsCurrentProtoocol,
                 Sa1 = new SA(new[] { protocolName, protocolVersion })
