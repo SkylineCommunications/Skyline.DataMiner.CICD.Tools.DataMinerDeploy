@@ -60,7 +60,7 @@
                 IsRequired = false,
             };
 
-            deployTimeout.SetDefaultValue(15);
+            deployTimeout.SetDefaultValue(900);
 
             var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent. Currently only supports private artifacts uploaded using a key from the organization.")
             {
