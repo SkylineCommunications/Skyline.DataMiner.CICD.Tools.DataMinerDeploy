@@ -60,7 +60,7 @@
                 IsRequired = false,
             };
 
-            deployTimeout.SetDefaultValue(-1);
+            deployTimeout.SetDefaultValue(900);
 
             var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent. Currently only supports private artifacts uploaded using a key from the organization.")
             {
@@ -98,6 +98,14 @@
                 IsRequired = false
             };
 
+            var postAction = new Option<PostActionsInputArgument>("--post-action")
+            {
+                Description = "Specify the post-action to perform. This only works for protocol packages (.dmprotocol).",
+                IsRequired = false
+            };
+
+            postAction.SetDefaultValue(PostActionsInputArgument.None);
+
             var fromArtifact = new Command("from-artifact", "Deploys a specific package from a local application package (.dmapp) or protocol package (.dmprotocol) to a DataMiner Agent. Warning: if using legacy application packages (.dmapp that you unzip, contains an Update.zip) the remote Agent will perform a restart.")
             {
                 isDebug,
@@ -105,7 +113,8 @@
                 dataMinerServerLocation,
                 dataminerUser,
                 dataminerPassword,
-                deployTimeout
+                deployTimeout,
+                postAction
             };
 
             // Optionally can add extra subcommands later to deploy from different sources to DataMiner.
@@ -113,7 +122,7 @@
             rootCommand.Add(fromCatalog);
 
             fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
-            fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout);
+            fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
 
             // dataminer-package-deploy
             int value = await rootCommand.InvokeAsync(args);
@@ -167,7 +176,7 @@
             return cleanArtifactId;
         }
 
-        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout)
+        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, PostActionsInputArgument actions)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
@@ -202,9 +211,29 @@
                 {
                     artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation, dataminerUser, dataminerPassword);
                 }
-
                 try
                 {
+                    if (actions != PostActionsInputArgument.None)
+                    {
+                        PostDeployActions postDeployActions = new PostDeployActions();
+
+                        switch (actions)
+                        {
+                            case PostActionsInputArgument.SetToProduction:
+                                postDeployActions.SetToProduction = (true, false);
+                                break;
+
+                            case PostActionsInputArgument.SetToProductionIncludingTemplates:
+                                postDeployActions.SetToProduction = (true, true);
+                                break;
+
+                            default:
+                                break;
+                        }
+
+                        artifact.AddPostDeployActions(postDeployActions);
+                    }
+
                     if (deployTimeout < 0)
                     {
                         deployTimeout = 900; // Default to 15min

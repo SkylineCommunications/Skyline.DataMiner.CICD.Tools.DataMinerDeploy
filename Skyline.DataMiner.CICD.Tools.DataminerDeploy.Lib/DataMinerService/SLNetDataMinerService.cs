@@ -20,6 +20,7 @@
     using Skyline.DataMiner.Net.AppPackages;
     using Skyline.DataMiner.Net.Exceptions;
     using Skyline.DataMiner.Net.Messages;
+    using Skyline.DataMiner.Net.Messages.Advanced;
     using Skyline.DataMiner.Net.Upgrade;
 
     internal class SLNetDataMinerService : IDataMinerService
@@ -43,7 +44,34 @@
             GC.SuppressFinalize(this);
         }
 
-        public void InstallDataMinerProtocol(string protocol)
+        /// <summary>
+        /// Allows you to place a protocol version as production version.
+        /// </summary>
+        /// <param name="protocolName">Name of protocol.</param>
+        /// <param name="protocolVersion">Version of protocol.</param>
+        /// <param name="copyTemplates">Indicates if templates should be included.</param>
+        private void SetAsProduction(string protocolName, string protocolVersion, bool copyTemplates)
+        {
+            var request = new SetDataMinerInfoMessage
+            {
+                ElementID = -1,
+                bInfo1 = Int32.MaxValue,
+                IInfo1 = Int32.MaxValue,
+                IInfo2 = Int32.MaxValue,
+                bInfo2 = copyTemplates ? 1 : 0,
+                What = (int)NotifyType.SetAsCurrentProtoocol,
+                Sa1 = new SA(new[] { protocolName, protocolVersion })
+            };
+
+            var resp = slnet.SendSingleResponseMessage(request) as SetDataMinerInfoResponseMessage;
+            var errorMessage = $"Could not set protocol {protocolName}/{protocolVersion} as production version.";
+            if (resp != null && resp.iRet == 0)
+                return;
+            string message = resp == null ? errorMessage + " The response was null." : errorMessage + $" The returned error code was {resp.iRet}";
+            throw new InvalidOperationException(message);
+        }
+
+        public void InstallDataMinerProtocol(string protocol, (bool isTrue, bool copyTemplates) setToProduction)
         {
             if (slnet == null)
             {
@@ -68,6 +96,15 @@
             {
                 UploadDataMinerProtocolMessage uploadDataMinerProtocolMessage = new UploadDataMinerProtocolMessage(dmprotocolCookie);
                 uploadDataMinerProtocolResponse = slnet.SendSingleResponseMessage(uploadDataMinerProtocolMessage) as UploadDataMinerProtocolResponse;
+
+                if (setToProduction.isTrue)
+                {
+                    logger.LogDebug($"Setting connector {uploadDataMinerProtocolResponse.ProtocolName} with version {uploadDataMinerProtocolResponse.ProtocolVersion} to production" + (setToProduction.copyTemplates ? " and copying over templates" : "") + "...");
+
+                    SetAsProduction(uploadDataMinerProtocolResponse.ProtocolName, uploadDataMinerProtocolResponse.ProtocolVersion, setToProduction.copyTemplates);
+
+                    logger.LogDebug($"Connector set to production.");
+                }
             }
             catch (Exception e)
             {
@@ -153,7 +190,7 @@
                     ip = ipAddress.ToString();
                 }
 
-                if(ip == "127.0.0.1")
+                if (ip == "127.0.0.1")
                 {
                     throw new InvalidOperationException("Unsupported: Legacy style local artifact deployment to localhost. As an alternative, please deploy from the catalog or deploy from a remote server.");
                 }

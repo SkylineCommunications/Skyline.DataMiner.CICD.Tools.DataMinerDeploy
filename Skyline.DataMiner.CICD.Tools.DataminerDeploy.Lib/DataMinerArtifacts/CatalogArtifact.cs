@@ -11,10 +11,10 @@
 
     internal class CatalogArtifact : IArtifact
     {
-        private readonly ILogger logger;
         private readonly string artifactIdentifier;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly string catalogAgentToken;
+        private readonly ILogger logger;
         private readonly ICatalogService service;
         private bool disposedValue;
         private string keyFromEnv;
@@ -49,6 +49,15 @@
 
         public CatalogArtifact(string artifactIdentifier, ILogger logger) : this(CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger), artifactIdentifier, logger)
         {
+        }
+
+        /// <summary>
+        /// Adds a series of actions to attempt after deployment.
+        /// </summary>
+        /// <param name="postDeployActions">An instance of <see cref="PostDeployActions"/> indicating what actions to try performing after deployment.</param>
+        public void AddPostDeployActions(PostDeployActions postDeployActions)
+        {
+            throw new InvalidOperationException("There is currently no support for additional actions after deployment from the catalog. Such actions are only possible for direct deployment of protocol packages (.dmprotocol).");
         }
 
         /// <summary>

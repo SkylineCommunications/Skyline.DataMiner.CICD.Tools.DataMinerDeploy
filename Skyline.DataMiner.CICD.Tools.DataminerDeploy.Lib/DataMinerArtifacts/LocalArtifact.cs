@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
+
     using Newtonsoft.Json;
 
     using Skyline.DataMiner.CICD.FileSystem;
@@ -15,17 +16,18 @@
 
     internal class LocalArtifact : IArtifact
     {
-        private readonly ILogger logger;
         private readonly string dataminerPassword;
         private readonly string dataMinerServerLocation;
         private readonly string dataminerUser;
         private readonly IFileSystem fs;
+        private readonly ILogger logger;
         private readonly string pathToArtifact;
         private readonly IDataMinerService service;
         private bool disposedValue;
+        private PostDeployActions postDeployActions;
         private string pwFromEnv;
-        private string userFromEnv;
         private bool shouldDisposeConnection = true;
+        private string userFromEnv;
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
         {
@@ -55,6 +57,15 @@
 
         public LocalArtifact(string pathToArtifact, string dataMinerServerLocation, ILogger logger, IFileSystem fs) : this(pathToArtifact, dataMinerServerLocation, null, null, logger, fs)
         {
+        }
+
+        /// <summary>
+        /// Adds a series of actions to attempt after deployment.
+        /// </summary>
+        /// <param name="postDeployActions">An instance of <see cref="PostDeployActions"/> indicating what actions to try performing after deployment.</param>
+        public void AddPostDeployActions(PostDeployActions postDeployActions)
+        {
+            this.postDeployActions = postDeployActions;
         }
 
         public void CancelDeployment()
@@ -117,7 +128,7 @@
 
                     case ArtifactTypeEnum.dmprotocol:
                         logger.LogDebug($"Found DataMiner protocol package (.dmprotocol).");
-                        service.InstallDataMinerProtocol(pathToArtifact);
+                        service.InstallDataMinerProtocol(pathToArtifact, postDeployActions?.SetToProduction ?? (false, false));
                         break;
 
                     default:
@@ -152,24 +163,6 @@
                 }
 
                 disposedValue = true;
-            }
-        }
-
-        /// <summary>
-        ///  Attempts to find the necessary API key in Environment Variables. In order of priority:
-        ///  <para>- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)</para>
-        ///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)</para>
-        /// </summary>
-        private void TryFindEnvironmentKeys()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Order of priority. Priority for regular environment keys as they are win/unix and industry standard in pipelines
-                userFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_USER_ENCRYPTED") ?? userFromEnv;
-                pwFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED") ?? pwFromEnv;
-
-                userFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_USER") ?? userFromEnv;
-                pwFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_PASSWORD") ?? pwFromEnv;
             }
         }
 
@@ -216,6 +209,24 @@
             }
 
             return userFromEnvironment;
+        }
+
+        /// <summary>
+        ///  Attempts to find the necessary API key in Environment Variables. In order of priority:
+        ///  <para>- key stored as an Environment Variable called "dmcatalogtoken". (unix/win)</para>
+        ///  <para>- key configured using Skyline.DataMiner.CICD.Tools.WinEncryptedKeys called "dmcatalogtoken_encrypted" (windows only)</para>
+        /// </summary>
+        private void TryFindEnvironmentKeys()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Order of priority. Priority for regular environment keys as they are win/unix and industry standard in pipelines
+                userFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_USER_ENCRYPTED") ?? userFromEnv;
+                pwFromEnv = TryFindEncryptedEnvironmentKey("DATAMINER_DEPLOY_PASSWORD_ENCRYPTED") ?? pwFromEnv;
+
+                userFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_USER") ?? userFromEnv;
+                pwFromEnv = TryFindEnvironmentKey("DATAMINER_DEPLOY_PASSWORD") ?? pwFromEnv;
+            }
         }
     }
 }

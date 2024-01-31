@@ -151,3 +151,26 @@ WinEncryptedKeys --name "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" --value "MyPasswor
 
 You can review and make suggestions to the sourcecode of this encryption tool here: 
 https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
+
+### Post Actions
+
+It's possible to define a '--post-action' argument, this is an action to be executed after initial deployment.
+
+Currently the following options are possible:
+
+ - SetToProduction:
+
+
+This will only work for protocol packages (.dmprotocol). After deployment, it will set the deployed version as production.
+
+
+ - SetToProductionIncludingTemplates:
+
+This will only work for protocol packages (.dmprotocol). After deployment, it will set the deployed version as protocol and also copy over all provided templates into production.
+
+
+For example
+
+```console
+dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location "" --post-action SetToProduction
+```
