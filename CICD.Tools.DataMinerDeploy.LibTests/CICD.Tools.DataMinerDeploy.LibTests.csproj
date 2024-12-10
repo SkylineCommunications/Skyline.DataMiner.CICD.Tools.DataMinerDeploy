@@ -9,15 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Extensions.Logging.Mock" Version="1.2.3" />
-    <PackageReference Include="FluentAssertions" Version="6.12.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Extensions.Logging.Mock" Version="1.2.4" />
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="MSTest" Version="3.6.4" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,13 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\TestNewDmapp.dmapp">
+    <None Update="TestData\*.dmapp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\TestOldDmapp.dmapp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\TestProtocol.dmprotocol">
+    <None Update="TestData\*.dmprotocol">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
