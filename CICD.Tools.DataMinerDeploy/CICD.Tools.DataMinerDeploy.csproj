@@ -19,6 +19,8 @@
     <Authors>SkylineCommunications</Authors>
     <Company>Skyline Communications</Company>
     <Description>Deploys a package to DataMiner from the catalog or directly from an artifact.</Description>
+    <!--SLNet uses a custom built BinaryFormatter that has a 'firewall' built-in against unsafe behavior (https://learn.microsoft.com/en-us/dotnet/core/compatibility/serialization/8.0/binaryformatter-disabled)-->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
