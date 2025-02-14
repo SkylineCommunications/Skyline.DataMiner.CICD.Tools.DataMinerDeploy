@@ -6,6 +6,7 @@
     <ToolCommandName>dataminer-package-deploy</ToolCommandName>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <Version>3.0.1-alpha2</Version>
     <AssemblyName>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</AssemblyName>
     <RootNamespace>Skyline.DataMiner.CICD.Tools.DataMinerDeploy</RootNamespace>
     <PackageTags>Skyline;DataMiner;CICD</PackageTags>

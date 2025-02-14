@@ -2,8 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Runtime.InteropServices.ComTypes;
+    using System.Security.Authentication;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -16,21 +20,36 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Rest;
 
-    internal sealed class HttpCatalogService : ICatalogService, IDisposable
+    using Newtonsoft.Json;
+
+    internal sealed class KeyCatalogServiceApi : ICatalogService, IDisposable
     {
-        private const string DeploymentInfoKey = "DeploymentInfo";
-        private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi;
-        private readonly DeployArtifactAPI _deployArtifactApi;
+        /// <summary>
+        /// Artifact information returned from uploading an artifact to the catalog using the non-volatile upload.
+        /// </summary>
+        private sealed class CatalogDeployResult
+        {
+            [JsonProperty("deploymentId")]
+            public string DeploymentId { get; set; }
+
+        }
+
+        private const string DeploymentPathStart = "api/key-catalog/v2-0/catalogs/";
+        private const string DeploymentPathMid = "/versions/";
+        private const string DeploymentEnd = "/deploy";
+        private readonly HttpClient _httpClient;
+
         private readonly ILogger _logger;
 
-        public HttpCatalogService(HttpClient httpClient, ILogger logger)
-        {
-            _logger = logger;
-            _deployArtifactApi = new DeployArtifactAPI(new BasicAuthenticationCredentials(), httpClient, false);
-            _artifactDeploymentInfoApi = new ArtifactDeploymentInfoAPI(new BasicAuthenticationCredentials(), httpClient, false);
+        // Workaround: Old API needed to track the deployment status
+        private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi; 
+        private const string DeploymentInfoKey = "DeploymentInfo";
 
-            // Need to override this, constructor of generated code uses a localhost address otherwise.
-            _deployArtifactApi.BaseUri = httpClient.BaseAddress;
+        public KeyCatalogServiceApi(HttpClient httpClient, ILogger logger)
+        {
+            _httpClient = httpClient;
+            _logger = logger;
+            _artifactDeploymentInfoApi = new ArtifactDeploymentInfoAPI(new BasicAuthenticationCredentials(), httpClient, false);
             _artifactDeploymentInfoApi.BaseUri = httpClient.BaseAddress;
         }
 
@@ -45,51 +64,41 @@
         /// <exception cref="UnauthorizedAccessException">When authentication to the agent and azure fails.</exception>
         public async Task<DeployingPackage> DeployPackageAsync(string artifactIdentifier, string key, CancellationToken cancellationToken)
         {
-            HttpOperationResponse<DeploymentModel> res;
+            var idInfo = artifactIdentifier.Split('|');
+            if (idInfo.Length != 3) throw new InvalidOperationException("Invalid ArtifactIdentifier, expected id|version|destination");
 
-            try
-            {
-                _logger.LogDebug($"Deploying {artifactIdentifier}");
-                res = await _deployArtifactApi.DeployArtifactWithApiKeyFunctionWithHttpMessagesAsync(new DeployArtifactAsSystemForm(artifactIdentifier), key, null, cancellationToken);
-            }
-            catch (HttpOperationException e)
-            {
-                throw new InvalidOperationException($"Azure artifact deploy failed with message {e.Response.Content}", e);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException($"Could not deploy the package {e}", e);
-            }
+            //api/key-catalog/v2-0/catalogs/ID/versions/VERSION/deploy
+            string versionUploadPath = $"{DeploymentPathStart}{idInfo[0]}{DeploymentPathMid}{idInfo[1]}{DeploymentEnd}";
 
-            if (res.Response.IsSuccessStatusCode)
+            using (var formData = new MultipartFormDataContent())
             {
-                if (Guid.TryParse(res.Body.DeploymentId, out var deploymentId))
+                formData.Headers.Add("Ocp-Apim-Subscription-Key", key);
+
+                // Add version information to the form data
+                formData.Add(new StringContent(idInfo[0]), "catalogId");
+                formData.Add(new StringContent(idInfo[1]), "versionId");
+                formData.Add(new StringContent(idInfo[2]), "coordinationId");
+
+                // Make the HTTP POST request
+                var response = await _httpClient.PostAsync(versionUploadPath, formData, cancellationToken).ConfigureAwait(false);
+
+                // Read and log the response body
+                var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogDebug($"Deployment {deploymentId} started...");
-                    return new DeployingPackage(artifactIdentifier, deploymentId);
+                    var returnedResult = JsonConvert.DeserializeObject<CatalogDeployResult>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    return new DeployingPackage(artifactIdentifier, Guid.Parse(returnedResult.DeploymentId));
                 }
 
-                throw new InvalidOperationException("Received an invalid deployment ID.");
+                if (response.StatusCode is HttpStatusCode.Forbidden || response.StatusCode is HttpStatusCode.Unauthorized)
+                {
+                    throw new AuthenticationException($"The catalog deployment api returned a {response.StatusCode} response. Body: {body}");
+                }
+
+                throw new InvalidOperationException($"The catalog deployment api returned a {response.StatusCode} response. Body: {body}");
+
             }
-
-            if (res.Response.StatusCode is HttpStatusCode.Forbidden || res.Response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                throw new UnauthorizedAccessException($"The deploy API returned a response with status code {res.Response.StatusCode}.");
-            }
-
-            var responseContent = String.Empty;
-            if (res.Response.Content != null)
-            {
-                responseContent = await res.Response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            }
-
-            throw new InvalidOperationException($"The deploy API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
-        }
-
-        public void Dispose()
-        {
-            _artifactDeploymentInfoApi.Dispose();
-            _deployArtifactApi.Dispose();
         }
 
         public async Task<DeployedPackage> GetDeployedPackageAsync(DeployingPackage deployingPackage, string key)
@@ -132,6 +141,11 @@
             }
 
             throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
+        }
+
+        public void Dispose()
+        {
+            _artifactDeploymentInfoApi.Dispose();
         }
     }
 }

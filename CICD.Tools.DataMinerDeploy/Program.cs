@@ -11,6 +11,7 @@
     using Serilog;
 
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib;
+    using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.CatalogService;
     using Skyline.DataMiner.CICD.Tools.Reporter;
 
     /// <summary>
@@ -41,9 +42,23 @@
 
             var artifactId = new Option<string>(
             name: "--artifact-id",
-            description: "The unique cloud artifact identifier as returned from performing a catalog-upload. e.g. dmscript/f764389f-5404-4c32-9ac9-b54366a3d5e0")
+            description: "The unique cloud artifact identifier. This is the catalog GUID of the item or the return value returned by the catalog uploader.")
             {
                 IsRequired = true
+            };
+
+            var artifactVersion = new Option<string>(
+            name: "--artifact-version",
+            description: "The version of the catalog item you want to deploy. This is required when not using the return value of the catalog uploader in the artifact-id.")
+            {
+                IsRequired = false
+            };
+
+            var agentDestinationId = new Option<string>(
+            name: "--agent-destination-id",
+            description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL. This is required when the dm-catalog-token is an Organization Token.")
+            {
+                IsRequired = false
             };
 
             var dmCatalogToken = new Option<string>(
@@ -66,6 +81,8 @@
             {
                 isDebug,
                 artifactId,
+                artifactVersion,
+                agentDestinationId,
                 dmCatalogToken,
                 deployTimeout
             };
@@ -121,7 +138,7 @@
             rootCommand.Add(fromArtifact);
             rootCommand.Add(fromCatalog);
 
-            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, dmCatalogToken, deployTimeout);
+            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, artifactVersion, agentDestinationId, dmCatalogToken, deployTimeout);
             fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
 
             // dataminer-package-deploy
@@ -134,16 +151,18 @@
         /// </summary>
         /// <param name="artifactId">The input could include a json or other debug info.</param>
         /// <returns>The extracted clean artifactId.</returns>
-        internal static string ExtractArtifactId(string artifactId)
+        internal static (string id, string version) ExtractArtifactId(string artifactId)
         {
             // smart filtering of input artifactId
             // could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
 
             string cleanArtifactId = artifactId;
+            string cleanArtifactVersion = String.Empty;
+
             int lastInformation = artifactId.LastIndexOf("INF]", StringComparison.Ordinal);
             if (lastInformation == -1)
             {
-                return cleanArtifactId;
+                return (cleanArtifactId, cleanArtifactVersion);
             }
 
             string onlyTheJson = artifactId.Substring(lastInformation + 4);
@@ -153,7 +172,9 @@
                 {
                     JsonElement root = doc.RootElement;
                     var jsonIdProperty = root.GetProperty("artifactId");
+                    var jsonVersionProperty = root.GetProperty("artifactVersion");
                     cleanArtifactId = jsonIdProperty.GetString();
+                    cleanArtifactVersion = jsonVersionProperty.GetString();
                 }
             }
             catch
@@ -162,7 +183,8 @@
                 var idStart = onlyTheJson.IndexOf("artifactId", StringComparison.Ordinal);
                 if (idStart != -1)
                 {
-                    var idStop = onlyTheJson.IndexOf("}", idStart, StringComparison.Ordinal);
+                    var idStop = onlyTheJson.IndexOf(",", idStart, StringComparison.Ordinal);
+                    if (idStop == -1) idStop = onlyTheJson.IndexOf("}", idStart, StringComparison.Ordinal);
                     if (idStop != -1)
                     {
                         var jsonIdProperty = onlyTheJson.Substring(idStart + 11, idStop - 11 - idStart);
@@ -171,9 +193,23 @@
                         cleanArtifactId = regex.Replace(jsonIdProperty, "");
                     }
                 }
+
+                var versionStart = onlyTheJson.IndexOf("artifactVersion", StringComparison.Ordinal);
+                if (versionStart != -1)
+                {
+                    var versionStop = onlyTheJson.IndexOf(",", versionStart, StringComparison.Ordinal);
+                    if (versionStop == -1) versionStop = onlyTheJson.IndexOf("}", versionStart, StringComparison.Ordinal);
+                    if (versionStop != -1)
+                    {
+                        var jsonVersionProperty = onlyTheJson.Substring(versionStart + 16, versionStop - 16 - versionStart);
+
+                        Regex regex = new Regex(@"[\s,:;\\""']+");
+                        cleanArtifactVersion = regex.Replace(jsonVersionProperty, "");
+                    }
+                }
             }
 
-            return cleanArtifactId;
+            return (cleanArtifactId, cleanArtifactVersion);
         }
 
         private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, PostActionsInputArgument actions)
@@ -283,13 +319,16 @@
             }
         }
 
-        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string dmCatalogToken, int deployTimeout)
+        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string artifactVersion, string agentDestinationId, string dmCatalogToken, int deployTimeout)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
 
-            artifactId = ExtractArtifactId(artifactId);
+            var artifactExtrated = ExtractArtifactId(artifactId);
+            artifactId = artifactExtrated.id;
+
+            if (String.IsNullOrWhiteSpace(artifactVersion)) artifactVersion = artifactExtrated.id;
 
             LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
             if (!isDebug)
@@ -314,11 +353,39 @@
 
                 if (String.IsNullOrWhiteSpace(dmCatalogToken))
                 {
-                    artifact = DeploymentFactory.Cloud(artifactId, logger);
+                    if (String.IsNullOrWhiteSpace(agentDestinationId))
+                    {
+                        artifact = DeploymentFactory.Cloud(artifactId, logger);
+                    }
+                    else
+                    {
+                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
+                        {
+                            CatalogGuid = artifactId,
+                            CatalogVersion = artifactVersion,
+                            DestinationGuid = agentDestinationId,
+                        };
+
+                        artifact = DeploymentFactory.Catalog(catId, logger);
+                    }
                 }
                 else
                 {
-                    artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
+                    if (String.IsNullOrWhiteSpace(agentDestinationId))
+                    {
+                        artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
+                    }
+                    else
+                    {
+                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
+                        {
+                            CatalogGuid = artifactId,
+                            CatalogVersion = artifactVersion,
+                            DestinationGuid = agentDestinationId,
+                        };
+
+                        artifact = DeploymentFactory.Catalog(catId, dmCatalogToken, logger);
+                    }
                 }
 
                 try
