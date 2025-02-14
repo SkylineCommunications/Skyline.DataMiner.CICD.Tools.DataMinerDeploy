@@ -1,21 +1,12 @@
 ﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using System.Runtime.InteropServices.ComTypes;
     using System.Security.Authentication;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ArtifactDeploymentInfoApi.Generated;
-    using ArtifactDeploymentInfoApi.Generated.Models;
-
-    using DeployArtifactApi.Generated;
-    using DeployArtifactApi.Generated.Models;
 
     using Microsoft.Extensions.Logging;
     using Microsoft.Rest;
@@ -41,16 +32,11 @@
 
         private readonly ILogger _logger;
 
-        // Workaround: Old API needed to track the deployment status
-        private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi; 
-        private const string DeploymentInfoKey = "DeploymentInfo";
 
         public KeyCatalogServiceApi(HttpClient httpClient, ILogger logger)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _artifactDeploymentInfoApi = new ArtifactDeploymentInfoAPI(new BasicAuthenticationCredentials(), httpClient, false);
-            _artifactDeploymentInfoApi.BaseUri = httpClient.BaseAddress;
         }
 
         /// <summary>
@@ -68,19 +54,14 @@
             if (idInfo.Length != 3) throw new InvalidOperationException("Invalid ArtifactIdentifier, expected id|version|destination");
 
             //api/key-catalog/v2-0/catalogs/ID/versions/VERSION/deploy
-            string versionUploadPath = $"{DeploymentPathStart}{idInfo[0]}{DeploymentPathMid}{idInfo[1]}{DeploymentEnd}";
+            string versionDeployPath = $"{DeploymentPathStart}{idInfo[0]}{DeploymentPathMid}{idInfo[1]}{DeploymentEnd}?coordinationId={idInfo[2]}";
 
-            using (var formData = new MultipartFormDataContent())
+            using (var request = new HttpRequestMessage(HttpMethod.Post, versionDeployPath))
             {
-                formData.Headers.Add("Ocp-Apim-Subscription-Key", key);
+                request.Headers.Add("Ocp-Apim-Subscription-Key", key);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                // Add version information to the form data
-                formData.Add(new StringContent(idInfo[0]), "catalogId");
-                formData.Add(new StringContent(idInfo[1]), "versionId");
-                formData.Add(new StringContent(idInfo[2]), "coordinationId");
-
-                // Make the HTTP POST request
-                var response = await _httpClient.PostAsync(versionUploadPath, formData, cancellationToken).ConfigureAwait(false);
+                var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                 // Read and log the response body
                 var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -97,18 +78,17 @@
                 }
 
                 throw new InvalidOperationException($"The catalog deployment api returned a {response.StatusCode} response. Body: {body}");
-
             }
         }
 
         public async Task<DeployedPackage> GetDeployedPackageAsync(DeployingPackage deployingPackage, string key)
         {
-            HttpOperationResponse<IDictionary<string, DeploymentInfoModel>> res;
-
             try
             {
-                _logger.LogDebug($"Checking deployment status...");
-                res = await _artifactDeploymentInfoApi.GetPrivateArtifactDeploymentInfoWithHttpMessagesAsync(deployingPackage.DeploymentId, key);
+                // No known implementation to check with Organization Token.
+                // ALWAYS RETURNS TRUE
+                _logger.LogDebug($"Deployment Status: Unknown - Skip and return OK");
+                return new DeployedPackage("succeeded");
             }
             catch (HttpOperationException e)
             {
@@ -118,34 +98,11 @@
             {
                 throw new InvalidOperationException($"Could not get the deployed package {e.ToString()}", e);
             }
-
-            if (res.Response.IsSuccessStatusCode)
-            {
-                if (res.Body.TryGetValue(DeploymentInfoKey, out var deploymentInfoModel))
-                {
-                    return new DeployedPackage(deploymentInfoModel.CurrentState);
-                }
-
-                throw new InvalidOperationException("Received an invalid deployment info response.");
-            }
-
-            if (res.Response.StatusCode is HttpStatusCode.Forbidden || res.Response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}.");
-            }
-
-            var responseContent = String.Empty;
-            if (res.Response.Content != null)
-            {
-                responseContent = await res.Response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            }
-
-            throw new InvalidOperationException($"The GetDeployedPackage API returned a response with status code {res.Response.StatusCode}, content: {responseContent}");
         }
 
         public void Dispose()
         {
-            _artifactDeploymentInfoApi.Dispose();
+            // Nothing to dispose
         }
     }
 }
