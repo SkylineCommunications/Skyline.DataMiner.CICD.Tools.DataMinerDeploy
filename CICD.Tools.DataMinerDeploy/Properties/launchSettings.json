@@ -2,7 +2,7 @@
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
       "commandName": "Project",
-      "commandLineArgs": "from-catalog\r\n--artifact-id \"8d97a58d-564d-403c-9b0c-0fa4c7025bda\"\r\n--artifact-version 1.0.1\r\n--agent-destination-id \"b6226b76-3619-4604-ae37-11339299f154\"\r\n--dm-catalog-token \"b66c4793e79848749696863f040fff81\""
+      "commandLineArgs": "from-catalog\r\n--artifact-id \"8d97a58d-564d-403c-9b0c-0fa4c7025bda\"\r\n--artifact-version 1.0.1\r\n--agent-destination-id \"b6226b76-3619-4604-ae37-11339299f154\"\r\n--dm-catalog-token \"\""
     }
   }
 }
