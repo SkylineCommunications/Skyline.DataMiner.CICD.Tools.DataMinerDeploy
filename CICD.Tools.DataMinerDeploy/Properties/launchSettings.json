@@ -2,7 +2,7 @@
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
       "commandName": "Project",
-      "commandLineArgs": "from-catalog\r\n--artifact-id \"\"\r\n--dm-catalog-token \"\""
+      "commandLineArgs": "from-catalog\r\n--catalog-id \"\"\r\n--catalog-version \"\"\r\n--agent-destination-id \"\"\r\n--dm-catalog-token \"\"\r\n--debug\r\n"
     }
   }
 }

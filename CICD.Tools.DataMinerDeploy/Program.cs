@@ -5,7 +5,6 @@
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-    using DotnetActionsToolkit;
 
     using Microsoft.Extensions.Logging;
 
@@ -41,32 +40,47 @@
 
             rootCommand.AddGlobalOption(isDebug);
 
-            var artifactId = new Option<string>(
-            name: "--artifact-id",
+            var catalogId = new Option<string>(
+            name: "--catalog-id",
             description: "The unique catalog artifact identifier. This is the catalog GUID of the item.")
             {
-                IsRequired = true
+                IsRequired = false // Make required in breaking change
             };
 
-            var artifactVersion = new Option<string>(
-            name: "--artifact-version",
+            var catalogVersion = new Option<string>(
+            name: "--catalog-version",
             description: "The version of the catalog item you want to deploy.")
             {
-                // Too many people using from-catalog as it currently exists. Cannot make this mandatory for now.
-                IsRequired = false
+                IsRequired = false  // Make required in breaking change
             };
 
             var agentDestinationId = new Option<string>(
             name: "--agent-destination-id",
             description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL. This is required when the dm-catalog-token is an Organization Token.")
             {
-                // Too many people using from-catalog as it currently exists. Cannot make this mandatory for now.
-                IsRequired = false
+                IsRequired = false  // Make required in breaking change
             };
 
             var dmCatalogToken = new Option<string>(
             name: "--dm-catalog-token",
-            description: "The key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services. This is optional if the key can also be provided using the 'DATAMINER_CATALOG_TOKEN' environment variable (Unix/Windows) or using 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (Windows).")
+            description: "The organization key to deploy to a specific cloud-connected DataMiner as defined in admin.dataminer.services. This is optional if the key can also be provided using the 'DATAMINER_CATALOG_TOKEN' environment variable (Unix/Windows) or using 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (Windows).")
+            {
+                IsRequired = false
+            };
+
+
+            // For the new command to support Volatile Uploads (old API)
+            var artifactId = new Option<string>(
+            name: "--artifact-id",
+            description: "The unique internal artifact identifier as returned from the CatalogUpload tool when performing a Volatile Upload.")
+            {
+                IsRequired = false // Make required in breaking change
+            };
+
+            // For the new command to support Volatile Uploads (old API)
+            var dmSystemAgentKey = new Option<string>(
+            name: "--dm-system-token",
+            description: "The DataMiner System key to deploy to a specific cloud-connected DataMiner agent as defined in admin.dataminer.services for a specific Agent. This is optional if the key can also be provided using the 'DATAMINER_CATALOG_TOKEN' environment variable (Unix/Windows) or using 'DATAMINER_CATALOG_TOKEN_ENCRYPTED' configured with Skyline.DataMiner.CICD.Tools.WinEncryptedKeys (Windows).")
             {
                 IsRequired = false
             };
@@ -79,16 +93,6 @@
             };
 
             deployTimeout.SetDefaultValue(900);
-
-            var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent. Currently only supports private artifacts uploaded using a key from the organization.")
-            {
-                isDebug,
-                artifactId,
-                artifactVersion,
-                agentDestinationId,
-                dmCatalogToken,
-                deployTimeout
-            };
 
             var pathToArtifact = new Option<string>(
                 name: "--path-to-artifact",
@@ -137,12 +141,33 @@
                 postAction
             };
 
+            var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent. Currently only supports private artifacts uploaded using a key from the organization.")
+            {
+                isDebug,
+                artifactId, // To be removed in breaking change
+                catalogId,
+                catalogVersion,
+                agentDestinationId,
+                dmCatalogToken,
+                deployTimeout
+            };
+
+            var fromVolatile = new Command("from-volatile", "Deploys a specific package that was uploaded using the CatalogUpload tool without long-term registration on the Catalog (Volatile Upload) to a cloud-connected DataMiner Agent. Only supports private artifacts uploaded using a key from the specific agent (System Key).")
+            {
+                isDebug,
+                artifactId,
+                dmSystemAgentKey,
+                deployTimeout
+            };
+
             // Optionally can add extra subcommands later to deploy from different sources to DataMiner.
             rootCommand.Add(fromArtifact);
             rootCommand.Add(fromCatalog);
+            rootCommand.Add(fromVolatile);
 
-            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, artifactVersion, agentDestinationId, dmCatalogToken, deployTimeout);
+            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, catalogId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
             fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
+            fromVolatile.SetHandler(ProcessVolatile, isDebug, artifactId, dmSystemAgentKey, deployTimeout);
 
             // dataminer-package-deploy
             int value = await rootCommand.InvokeAsync(args);
@@ -156,6 +181,7 @@
         /// <returns>The extracted clean artifactId.</returns>
         internal static (string id, string version) ExtractArtifactId(string artifactId)
         {
+            if (String.IsNullOrWhiteSpace(artifactId)) { return ("", ""); }
             // smart filtering of input artifactId
             // could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
 
@@ -322,16 +348,20 @@
             }
         }
 
-        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string artifactVersion, string agentDestinationId, string dmCatalogToken, int deployTimeout)
+        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string catalogId, string catalogVersion, string agentDestinationId, string dmCatalogToken, int deployTimeout)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
 
+            // Can be removed in Breaking Change and just use provided arguments that are required.
+
+            #region ToBeRemoved
             var artifactExtrated = ExtractArtifactId(artifactId);
             artifactId = artifactExtrated.id;
-
-            if (String.IsNullOrWhiteSpace(artifactVersion)) artifactVersion = artifactExtrated.id;
+            if (String.IsNullOrWhiteSpace(catalogVersion)) catalogVersion = artifactExtrated.id;
+            if (String.IsNullOrWhiteSpace(catalogId)) catalogId = artifactId;
+            #endregion
 
             LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
             if (!isDebug)
@@ -359,15 +389,16 @@
                     if (String.IsNullOrWhiteSpace(agentDestinationId))
                     {
                         DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
-                        core.Warning("Subcommand: 'from-catalog --artifact-id {upload result}' using the Agent Key is deprecated and must be replaced by 'from-catalog --artifact-id {catalog guid} --artifact-version {catalog version} --agent-destination-id {agent guid}' and using the Organization key instead. This change will be pushed in a new major change of this tool on 01/05/2025.");
+                        core.Warning("The subcommand 'from-catalog --artifact-id {upload result}' using the DataMiner System key is deprecated and must be replaced. Use either the new 'from-volatile' subcommand or 'from-catalog --catalog-id {catalog guid} --catalog-version {catalog version} --agent-destination-id {agent guid}' with the organization key instead. This change will be enforced in a major update of this tool on May 1, 2025.");
+                        devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog-legacy:{artifactId}";
                         artifact = DeploymentFactory.Cloud(artifactId, logger);
                     }
                     else
                     {
                         KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
                         {
-                            CatalogGuid = artifactId,
-                            CatalogVersion = artifactVersion,
+                            CatalogGuid = catalogId,
+                            CatalogVersion = catalogVersion,
                             DestinationGuid = agentDestinationId,
                         };
 
@@ -379,20 +410,111 @@
                     if (String.IsNullOrWhiteSpace(agentDestinationId))
                     {
                         DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
-                        core.Warning("Subcommand: 'from-catalog --artifact-id {upload result}' using the Agent Key is deprecated and must be replaced by 'from-catalog --artifact-id {catalog guid} --artifact-version {catalog version} --agent-destination-id {agent guid}' and using the Organization key instead. This change will be pushed in a new major change of this tool on 01/05/2025.");
+                        core.Warning("The subcommand 'from-catalog --artifact-id {upload result}' using the DataMiner System key is deprecated and must be replaced. Use either the new 'from-volatile' subcommand or 'from-catalog --catalog-id {catalog guid} --catalog-version {catalog version} --agent-destination-id {agent guid}' with the organization key instead. This change will be enforced in a major update of this tool on May 1, 2025.");
+                        devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog-legacy:{artifactId}";
                         artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
                     }
                     else
                     {
                         KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
                         {
-                            CatalogGuid = artifactId,
-                            CatalogVersion = artifactVersion,
+                            CatalogGuid = catalogId,
+                            CatalogVersion = catalogVersion,
                             DestinationGuid = agentDestinationId,
                         };
 
                         artifact = DeploymentFactory.Catalog(catId, dmCatalogToken, logger);
                     }
+                }
+
+                try
+                {
+                    if (deployTimeout < 0)
+                    {
+                        deployTimeout = 900; // Default to 15min
+                    }
+                    else if (deployTimeout == 0)
+                    {
+                        deployTimeout = Int32.MaxValue; // MaxValue
+                    }
+
+                    if (await artifact.DeployAsync(TimeSpan.FromSeconds(deployTimeout)))
+                    {
+                        devopsMetricsMessage += "|Status:OK";
+                        return 0;
+                    }
+                    else
+                    {
+                        devopsMetricsMessage += "|Status:Fail-Deployment returned false";
+                        logger.LogCritical("Fail-Deployment returned false");
+                        return 1;
+                    }
+                }
+                finally
+                {
+                    artifact.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                devopsMetricsMessage += "|Status:Fail-" + ex.Message;
+                logger.LogCritical(ex.ToString());
+                return 1;
+            }
+            finally
+            {
+                if (!String.IsNullOrWhiteSpace(devopsMetricsMessage))
+                {
+                    try
+                    {
+                        DevOpsMetrics devOpsMetrics = new DevOpsMetrics();
+                        await devOpsMetrics.ReportAsync(devopsMetricsMessage);
+                    }
+                    catch
+                    {
+                        // Fire and forget.
+                    }
+                }
+            }
+        }
+
+        private static async Task<int> ProcessVolatile(bool isDebug, string artifactId, string dmSystemAgentKey, int deployTimeout)
+        {
+            // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
+            // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
+            string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-volatile:{artifactId}";
+
+            var artifactExtrated = ExtractArtifactId(artifactId);
+            artifactId = artifactExtrated.id;
+
+            LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
+            if (!isDebug)
+            {
+                logConfig.MinimumLevel.Information();
+            }
+            else
+            {
+                logConfig.MinimumLevel.Debug();
+            }
+
+            var seriLog = logConfig.CreateLogger();
+
+            LoggerFactory loggerFactory = new LoggerFactory();
+            loggerFactory.AddSerilog(seriLog);
+
+            var logger = loggerFactory.CreateLogger("Skyline.DataMiner.CICD.Tools.DataMinerDeploy");
+
+            try
+            {
+                IArtifact artifact;
+
+                if (String.IsNullOrWhiteSpace(dmSystemAgentKey))
+                {
+                    artifact = DeploymentFactory.Cloud(artifactId, logger);
+                }
+                else
+                {
+                    artifact = DeploymentFactory.Cloud(artifactId, dmSystemAgentKey, logger);
                 }
 
                 try
