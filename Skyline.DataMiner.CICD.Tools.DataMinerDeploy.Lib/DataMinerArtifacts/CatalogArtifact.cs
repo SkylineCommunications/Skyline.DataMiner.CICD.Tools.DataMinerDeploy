@@ -113,6 +113,8 @@
         public CatalogArtifact(ICatalogService service, KeyCatalogDeploymentIdentifier artifactIdentifier, ILogger logger)
         {
             cancellationTokenSource = new CancellationTokenSource();
+
+            // This is temporary, to be changed when we make the breaking changes and remove all deprecated calls and new range so we can change our public interface.
             this.artifactIdentifier = artifactIdentifier.CatalogGuid + "|" + artifactIdentifier.CatalogVersion + "|" + artifactIdentifier.DestinationGuid;
 
             this.logger = logger;

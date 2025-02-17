@@ -5,6 +5,7 @@
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using DotnetActionsToolkit;
 
     using Microsoft.Extensions.Logging;
 
@@ -42,15 +43,16 @@
 
             var artifactId = new Option<string>(
             name: "--artifact-id",
-            description: "The unique cloud artifact identifier. This is the catalog GUID of the item or the return value returned by the catalog uploader.")
+            description: "The unique catalog artifact identifier. This is the catalog GUID of the item.")
             {
                 IsRequired = true
             };
 
             var artifactVersion = new Option<string>(
             name: "--artifact-version",
-            description: "The version of the catalog item you want to deploy. This is required when not using the return value of the catalog uploader in the artifact-id.")
+            description: "The version of the catalog item you want to deploy.")
             {
+                // Too many people using from-catalog as it currently exists. Cannot make this mandatory for now.
                 IsRequired = false
             };
 
@@ -58,6 +60,7 @@
             name: "--agent-destination-id",
             description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL. This is required when the dm-catalog-token is an Organization Token.")
             {
+                // Too many people using from-catalog as it currently exists. Cannot make this mandatory for now.
                 IsRequired = false
             };
 
@@ -355,6 +358,8 @@
                 {
                     if (String.IsNullOrWhiteSpace(agentDestinationId))
                     {
+                        DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
+                        core.Warning("Subcommand: 'from-catalog --artifact-id {upload result}' using the Agent Key is deprecated and must be replaced by 'from-catalog --artifact-id {catalog guid} --artifact-version {catalog version} --agent-destination-id {agent guid}' and using the Organization key instead. This change will be pushed in a new major change of this tool on 01/05/2025.");
                         artifact = DeploymentFactory.Cloud(artifactId, logger);
                     }
                     else
@@ -373,6 +378,8 @@
                 {
                     if (String.IsNullOrWhiteSpace(agentDestinationId))
                     {
+                        DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
+                        core.Warning("Subcommand: 'from-catalog --artifact-id {upload result}' using the Agent Key is deprecated and must be replaced by 'from-catalog --artifact-id {catalog guid} --artifact-version {catalog version} --agent-destination-id {agent guid}' and using the Organization key instead. This change will be pushed in a new major change of this tool on 01/05/2025.");
                         artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
                     }
                     else
