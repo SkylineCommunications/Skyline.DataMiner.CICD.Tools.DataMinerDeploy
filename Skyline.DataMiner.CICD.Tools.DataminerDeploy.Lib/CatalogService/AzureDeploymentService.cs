@@ -16,14 +16,14 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Rest;
 
-    internal sealed class HttpCatalogService : ICatalogService, IDisposable
+    internal sealed class AzureDeploymentService : ICatalogService, IDisposable
     {
         private const string DeploymentInfoKey = "DeploymentInfo";
         private readonly IArtifactDeploymentInfoAPI _artifactDeploymentInfoApi;
         private readonly DeployArtifactAPI _deployArtifactApi;
         private readonly ILogger _logger;
 
-        public HttpCatalogService(HttpClient httpClient, ILogger logger)
+        public AzureDeploymentService(HttpClient httpClient, ILogger logger)
         {
             _logger = logger;
             _deployArtifactApi = new DeployArtifactAPI(new BasicAuthenticationCredentials(), httpClient, false);
