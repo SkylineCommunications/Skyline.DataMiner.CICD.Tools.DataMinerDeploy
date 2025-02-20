@@ -68,7 +68,6 @@
                 IsRequired = false
             };
 
-
             // For the new command to support Volatile Uploads (old API)
             var artifactId = new Option<string>(
             name: "--artifact-id",
@@ -179,19 +178,18 @@
         /// </summary>
         /// <param name="artifactId">The input could include a json or other debug info.</param>
         /// <returns>The extracted clean artifactId.</returns>
-        internal static (string id, string version) ExtractArtifactId(string artifactId)
+        internal static string ExtractArtifactId(string artifactId)
         {
-            if (String.IsNullOrWhiteSpace(artifactId)) { return ("", ""); }
+            if (String.IsNullOrWhiteSpace(artifactId)) { return String.Empty; }
             // smart filtering of input artifactId
             // could have extra debug info as well: "[11:41:24 INF] {artifactId:dmscript/bcbe888f-36aa-4f60-8e12-61fe0bc9d22b}"}
 
             string cleanArtifactId = artifactId;
-            string cleanArtifactVersion = String.Empty;
 
             int lastInformation = artifactId.LastIndexOf("INF]", StringComparison.Ordinal);
             if (lastInformation == -1)
             {
-                return (cleanArtifactId, cleanArtifactVersion);
+                return cleanArtifactId;
             }
 
             string onlyTheJson = artifactId.Substring(lastInformation + 4);
@@ -201,19 +199,16 @@
                 {
                     JsonElement root = doc.RootElement;
                     var jsonIdProperty = root.GetProperty("artifactId");
-                    var jsonVersionProperty = root.GetProperty("artifactVersion");
                     cleanArtifactId = jsonIdProperty.GetString();
-                    cleanArtifactVersion = jsonVersionProperty.GetString();
                 }
             }
-            catch
+            catch (Exception e)
             {
                 // Best effort. Gobble up parsing exceptions and try to handle situations with weird escapings like PowerShell
                 var idStart = onlyTheJson.IndexOf("artifactId", StringComparison.Ordinal);
                 if (idStart != -1)
                 {
-                    var idStop = onlyTheJson.IndexOf(",", idStart, StringComparison.Ordinal);
-                    if (idStop == -1) idStop = onlyTheJson.IndexOf("}", idStart, StringComparison.Ordinal);
+                    var idStop = onlyTheJson.IndexOf("}", idStart, StringComparison.Ordinal);
                     if (idStop != -1)
                     {
                         var jsonIdProperty = onlyTheJson.Substring(idStart + 11, idStop - 11 - idStart);
@@ -222,23 +217,9 @@
                         cleanArtifactId = regex.Replace(jsonIdProperty, "");
                     }
                 }
-
-                var versionStart = onlyTheJson.IndexOf("artifactVersion", StringComparison.Ordinal);
-                if (versionStart != -1)
-                {
-                    var versionStop = onlyTheJson.IndexOf(",", versionStart, StringComparison.Ordinal);
-                    if (versionStop == -1) versionStop = onlyTheJson.IndexOf("}", versionStart, StringComparison.Ordinal);
-                    if (versionStop != -1)
-                    {
-                        var jsonVersionProperty = onlyTheJson.Substring(versionStart + 16, versionStop - 16 - versionStart);
-
-                        Regex regex = new Regex(@"[\s,:;\\""']+");
-                        cleanArtifactVersion = regex.Replace(jsonVersionProperty, "");
-                    }
-                }
             }
 
-            return (cleanArtifactId, cleanArtifactVersion);
+            return cleanArtifactId;
         }
 
         private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, PostActionsInputArgument actions)
@@ -357,9 +338,7 @@
             // Can be removed in Breaking Change and just use provided arguments that are required.
 
             #region ToBeRemoved
-            var artifactExtrated = ExtractArtifactId(artifactId);
-            artifactId = artifactExtrated.id;
-            if (String.IsNullOrWhiteSpace(catalogVersion)) catalogVersion = artifactExtrated.id;
+            artifactId = ExtractArtifactId(artifactId);
             if (String.IsNullOrWhiteSpace(catalogId)) catalogId = artifactId;
             #endregion
 
@@ -395,7 +374,7 @@
                     }
                     else
                     {
-                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
+                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
                         {
                             CatalogGuid = catalogId,
                             CatalogVersion = catalogVersion,
@@ -416,7 +395,7 @@
                     }
                     else
                     {
-                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier()
+                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
                         {
                             CatalogGuid = catalogId,
                             CatalogVersion = catalogVersion,
@@ -484,8 +463,7 @@
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
             string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-volatile:{artifactId}";
 
-            var artifactExtrated = ExtractArtifactId(artifactId);
-            artifactId = artifactExtrated.id;
+            artifactId = ExtractArtifactId(artifactId);
 
             LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
             if (!isDebug)

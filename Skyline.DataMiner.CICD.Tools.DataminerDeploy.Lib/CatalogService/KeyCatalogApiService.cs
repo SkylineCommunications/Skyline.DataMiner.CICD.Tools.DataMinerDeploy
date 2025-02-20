@@ -22,7 +22,6 @@
         {
             [JsonProperty("deploymentId")]
             public string DeploymentId { get; set; }
-
         }
 
         private const string DeploymentPathStart = "api/key-catalog/v2-0/catalogs/";
@@ -31,7 +30,6 @@
         private readonly HttpClient _httpClient;
 
         private readonly ILogger _logger;
-
 
         public KeyCatalogServiceApi(HttpClient httpClient, ILogger logger)
         {
@@ -68,7 +66,7 @@
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var returnedResult = JsonConvert.DeserializeObject<CatalogDeployResult>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    var returnedResult = JsonConvert.DeserializeObject<CatalogDeployResult>(body);
                     return new DeployingPackage(artifactIdentifier, Guid.Parse(returnedResult.DeploymentId));
                 }
 
@@ -96,7 +94,7 @@
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Could not get the deployed package {e.ToString()}", e);
+                throw new InvalidOperationException($"Could not get the deployed package {e}", e);
             }
         }
 

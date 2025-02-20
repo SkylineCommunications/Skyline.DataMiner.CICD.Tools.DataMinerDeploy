@@ -43,8 +43,12 @@ There are currently however a couple of limitations.
 - Deployment from something uploaded using CatalogUpload  currently only works for private artifacts. Meaning you need to use an agent key of the same organization (admin.dataminer.services) that was used to perform the upload.
 
 ## Getting Started
+
 In commandline:
+
+```console
 dotnet tool install -g Skyline.DataMiner.CICD.Tools.DataMinerDeploy
+```
 
 Then run the command
 dataminer-package-deploy --help

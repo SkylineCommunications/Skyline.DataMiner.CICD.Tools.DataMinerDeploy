@@ -157,8 +157,7 @@
             logger.LogDebug("Deployment started...");
             var output = await ConfirmSuccesfullDeploymentAsync(catalogAgentToken, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(2), timeout, deploying);
             logger.LogDebug("Deployment finished.");
-            logger.LogInformation(
-                JsonConvert.SerializeObject(output));
+            logger.LogInformation(JsonConvert.SerializeObject(output));
 
             return output.Status.Equals("succeeded", StringComparison.InvariantCultureIgnoreCase);
         }
