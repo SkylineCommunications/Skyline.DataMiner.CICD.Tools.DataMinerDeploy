@@ -14,7 +14,6 @@
     internal class CatalogArtifact : IArtifact
     {
         private readonly string artifactIdentifier;
-
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly string catalogAgentToken;
         private readonly ILogger logger;
@@ -26,7 +25,7 @@
         {
             if (!String.IsNullOrWhiteSpace(artifactVersion) && !String.IsNullOrWhiteSpace(deploymentLocation))
             {
-                this.artifactIdentifier = artifactIdentifier + "|" + artifactVersion + "|" + deploymentLocation;
+                this.artifactIdentifier = $"{artifactIdentifier}|{artifactVersion}|{deploymentLocation}";
             }
             else if (!String.IsNullOrWhiteSpace(artifactVersion))
             {
@@ -74,7 +73,7 @@
         {
             cancellationTokenSource = new CancellationTokenSource();
 
-            this.artifactIdentifier = artifactIdentifier.CatalogGuid + "|" + artifactIdentifier.CatalogVersion + "|" + artifactIdentifier.DestinationGuid;
+            this.artifactIdentifier = $"{artifactIdentifier.CatalogGuid}|{artifactIdentifier.CatalogVersion}|{artifactIdentifier.DestinationGuid}";
 
             this.logger = logger;
             this.service = CatalogServiceFactory.CreateWithHttpKeyCatalogApi(new System.Net.Http.HttpClient(), logger);
@@ -115,7 +114,7 @@
             cancellationTokenSource = new CancellationTokenSource();
 
             // This is temporary, to be changed when we make the breaking changes and remove all deprecated calls and new range so we can change our public interface.
-            this.artifactIdentifier = artifactIdentifier.CatalogGuid + "|" + artifactIdentifier.CatalogVersion + "|" + artifactIdentifier.DestinationGuid;
+            this.artifactIdentifier = $"{artifactIdentifier.CatalogGuid}|{artifactIdentifier.CatalogVersion}|{artifactIdentifier.DestinationGuid}";
 
             this.logger = logger;
             this.service = service;

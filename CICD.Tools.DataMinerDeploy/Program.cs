@@ -202,7 +202,7 @@
                     cleanArtifactId = jsonIdProperty.GetString();
                 }
             }
-            catch (Exception e)
+            catch
             {
                 // Best effort. Gobble up parsing exceptions and try to handle situations with weird escapings like PowerShell
                 var idStart = onlyTheJson.IndexOf("artifactId", StringComparison.Ordinal);
