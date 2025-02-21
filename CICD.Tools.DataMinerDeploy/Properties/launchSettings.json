@@ -2,7 +2,7 @@
   "profiles": {
     "CICD.Tools.DataMinerDeploy": {
       "commandName": "Project",
-      "commandLineArgs": "from-artifact\r\n--path-to-artifact \"C:\\Users\\JANS\\Downloads\\Meinberg_LANTIME_IMS-SCG_1_0_1_3.dmprotocol\"\r\n--dm-server-location \"dms-it-dev.skyline.local\"\r\n--post-action SetToProduction\r\n--debug\r\n\r\n"
+      "commandLineArgs": "from-catalog\r\n--catalog-id \"\"\r\n--catalog-version \"\"\r\n--agent-destination-id \"\"\r\n--dm-catalog-token \"\"\r\n--debug\r\n"
     }
   }
 }

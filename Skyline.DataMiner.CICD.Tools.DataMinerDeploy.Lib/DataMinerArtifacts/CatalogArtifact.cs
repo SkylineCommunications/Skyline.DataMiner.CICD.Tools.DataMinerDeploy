@@ -9,6 +9,8 @@
 
     using Newtonsoft.Json;
 
+    using Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib.CatalogService;
+
     internal class CatalogArtifact : IArtifact
     {
         private readonly string artifactIdentifier;
@@ -19,17 +21,69 @@
         private bool disposedValue;
         private string keyFromEnv;
 
-        public CatalogArtifact(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger)
+        public CatalogArtifact(ICatalogService service, string artifactIdentifier, string artifactVersion, string deploymentLocation, string catalogAgentToken, ILogger logger)
         {
-            this.artifactIdentifier = artifactIdentifier;
+            if (!String.IsNullOrWhiteSpace(artifactVersion) && !String.IsNullOrWhiteSpace(deploymentLocation))
+            {
+                this.artifactIdentifier = $"{artifactIdentifier}|{artifactVersion}|{deploymentLocation}";
+            }
+            else if (!String.IsNullOrWhiteSpace(artifactVersion))
+            {
+                throw new InvalidOperationException("ERROR: When providing artifactVersion it's required to also specify a Deployment Location.");
+            }
+            else if (!String.IsNullOrWhiteSpace(deploymentLocation))
+            {
+                throw new InvalidOperationException("ERROR: When providing a Deployment Location it's required to also specify an Artifact Version.");
+            }
+            else
+            {
+                this.artifactIdentifier = artifactIdentifier;
+            }
+
             this.catalogAgentToken = catalogAgentToken;
             this.logger = logger;
             this.service = service;
             cancellationTokenSource = new CancellationTokenSource();
         }
 
+        public CatalogArtifact(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger) : this(service, artifactIdentifier, null, null, catalogAgentToken, logger)
+        {
+        }
+
         public CatalogArtifact(string artifactIdentifier, string catalogAgentToken, ILogger logger) : this(CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger), artifactIdentifier, catalogAgentToken, logger)
         {
+        }
+
+        public CatalogArtifact(string artifactIdentifier, ILogger logger)
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            this.artifactIdentifier = artifactIdentifier;
+            this.logger = logger;
+            this.service = CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger);
+            TryFindEnvironmentKey();
+            if (String.IsNullOrWhiteSpace(keyFromEnv))
+            {
+                throw new InvalidOperationException("Deployment failed, missing token in environment variable DATAMINER_CATALOG_TOKEN or DATAMINER_CATALOG_TOKEN_ENCRYPTED. Either add that, or use the provided catalogAgentToken argument.");
+            }
+
+            catalogAgentToken = keyFromEnv;
+        }
+
+        public CatalogArtifact(KeyCatalogDeploymentIdentifier artifactIdentifier, ILogger logger)
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+
+            this.artifactIdentifier = $"{artifactIdentifier.CatalogGuid}|{artifactIdentifier.CatalogVersion}|{artifactIdentifier.DestinationGuid}";
+
+            this.logger = logger;
+            this.service = CatalogServiceFactory.CreateWithHttpKeyCatalogApi(new System.Net.Http.HttpClient(), logger);
+            TryFindEnvironmentKey();
+            if (String.IsNullOrWhiteSpace(keyFromEnv))
+            {
+                throw new InvalidOperationException("Deployment failed, missing token in environment variable DATAMINER_CATALOG_TOKEN or DATAMINER_CATALOG_TOKEN_ENCRYPTED. Either add that, or use the provided catalogAgentToken argument.");
+            }
+
+            catalogAgentToken = keyFromEnv;
         }
 
         public CatalogArtifact(ICatalogService service, string artifactIdentifier, ILogger logger)
@@ -47,8 +101,30 @@
             catalogAgentToken = keyFromEnv;
         }
 
-        public CatalogArtifact(string artifactIdentifier, ILogger logger) : this(CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger), artifactIdentifier, logger)
+        public CatalogArtifact(ICatalogService service, KeyCatalogDeploymentIdentifier artifactIdentifier, string catalogAgentToken, ILogger logger) : this(service, artifactIdentifier.CatalogGuid, artifactIdentifier.CatalogVersion, artifactIdentifier.DestinationGuid, catalogAgentToken, logger)
         {
+        }
+
+        public CatalogArtifact(KeyCatalogDeploymentIdentifier artifactIdentifier, string catalogAgentToken, ILogger logger) : this(CatalogServiceFactory.CreateWithHttpKeyCatalogApi(new System.Net.Http.HttpClient(), logger), artifactIdentifier, catalogAgentToken, logger)
+        {
+        }
+
+        public CatalogArtifact(ICatalogService service, KeyCatalogDeploymentIdentifier artifactIdentifier, ILogger logger)
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+
+            // This is temporary, to be changed when we make the breaking changes and remove all deprecated calls and new range so we can change our public interface.
+            this.artifactIdentifier = $"{artifactIdentifier.CatalogGuid}|{artifactIdentifier.CatalogVersion}|{artifactIdentifier.DestinationGuid}";
+
+            this.logger = logger;
+            this.service = service;
+            TryFindEnvironmentKey();
+            if (String.IsNullOrWhiteSpace(keyFromEnv))
+            {
+                throw new InvalidOperationException("Deployment failed, missing token in environment variable DATAMINER_CATALOG_TOKEN or DATAMINER_CATALOG_TOKEN_ENCRYPTED. Either add that, or use the provided catalogAgentToken argument.");
+            }
+
+            catalogAgentToken = keyFromEnv;
         }
 
         /// <summary>
