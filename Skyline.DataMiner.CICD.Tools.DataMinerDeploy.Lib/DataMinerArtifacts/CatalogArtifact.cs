@@ -50,7 +50,7 @@
         {
         }
 
-        public CatalogArtifact(string artifactIdentifier, string catalogAgentToken, ILogger logger) : this(CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger), artifactIdentifier, catalogAgentToken, logger)
+        public CatalogArtifact(string artifactIdentifier, string catalogAgentToken, ILogger logger) : this(CatalogServiceFactory.CreateWithHttpForVolatile(new System.Net.Http.HttpClient(), logger), artifactIdentifier, catalogAgentToken, logger)
         {
         }
 
@@ -59,7 +59,7 @@
             cancellationTokenSource = new CancellationTokenSource();
             this.artifactIdentifier = artifactIdentifier;
             this.logger = logger;
-            this.service = CatalogServiceFactory.CreateWithHttp(new System.Net.Http.HttpClient(), logger);
+            this.service = CatalogServiceFactory.CreateWithHttpForVolatile(new System.Net.Http.HttpClient(), logger);
             TryFindEnvironmentKey();
             if (String.IsNullOrWhiteSpace(keyFromEnv))
             {

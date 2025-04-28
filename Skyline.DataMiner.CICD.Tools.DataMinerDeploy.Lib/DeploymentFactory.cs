@@ -69,13 +69,12 @@
         /// <summary>
         /// A deployment using a catalog artifact identifier from the cloud, to a cloud connected Agent.
         /// </summary>
-        /// <remarks>WARNING: when wishing to deploy several artifacts it is recommended to use <see cref="Cloud(ICatalogService, string, string, ILogger)"/>.</remarks>
+        /// <remarks>WARNING: when wishing to deploy several artifacts it is recommended to use <see cref="Volatile(ICatalogService, string, string, ILogger)"/>.</remarks>
         /// <param name="artifactIdentifier">The unique cloud artifact identifier as returned from performing a catalog-upload.</param>
         /// <param name="catalogAgentToken">A provided token for the agent as defined in https://admin.dataminer.services/.</param>
         /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
         /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-        [Obsolete("This uses an obsolete deployment service in the backend. Recommended to use DeploymentFactory.Catalog for new deployments.")]
-        public static IArtifact Cloud(string artifactIdentifier, string catalogAgentToken, ILogger logger)
+        public static IArtifact Volatile(string artifactIdentifier, string catalogAgentToken, ILogger logger)
         {
             logger.LogDebug($"Attempting deployment with provided argument as token for artifact: {artifactIdentifier}...");
             return new CatalogArtifact(artifactIdentifier, catalogAgentToken, logger);
@@ -84,12 +83,11 @@
         /// <summary>
         /// A deployment using a catalog artifact identifier from the cloud, to a cloud connected Agent. This uses the DATAMINER_CATALOG_TOKEN or DATAMINER_CATALOG_TOKEN environment variable as the token for the agent.
         /// </summary>
-        /// <remarks>WARNING: when wishing to deploy several artifacts it is recommended to use <see cref="Cloud(ICatalogService, string, string, ILogger)"/>.</remarks>
+        /// <remarks>WARNING: when wishing to deploy several artifacts it is recommended to use <see cref="Volatile(ICatalogService, string, string, ILogger)"/>.</remarks>
         /// <param name="artifactIdentifier">The unique cloud artifact identifier as returned from performing a catalog-upload.</param>
         /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
         /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-        [Obsolete("This uses an obsolete deployment service in the backend. Recommended to use DeploymentFactory.Catalog for new deployments.")]
-        public static IArtifact Cloud(string artifactIdentifier, ILogger logger)
+        public static IArtifact Volatile(string artifactIdentifier, ILogger logger)
         {
             logger.LogDebug($"Attempting deployment with environment variable as token for artifact: {artifactIdentifier}...");
             return new CatalogArtifact(artifactIdentifier, logger);
@@ -103,8 +101,7 @@
         /// <param name="catalogAgentToken">A provided token for the agent as defined in https://admin.dataminer.services/.</param>
         /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
         /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-        [Obsolete("This uses an obsolete deployment service in the backend. Recommended to use DeploymentFactory.Catalog for new deployments.")]
-        public static IArtifact Cloud(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger)
+        public static IArtifact Volatile(ICatalogService service, string artifactIdentifier, string catalogAgentToken, ILogger logger)
         {
             return new CatalogArtifact(service, artifactIdentifier, catalogAgentToken, logger);
         }
@@ -116,8 +113,7 @@
         /// <param name="artifactIdentifier">The unique cloud artifact identifier as returned from performing a catalog-upload.</param>
         /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
         /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
-        [Obsolete("This uses an obsolete deployment service in the backend. Recommended to use DeploymentFactory.Catalog for new deployments.")]
-        public static IArtifact Cloud(ICatalogService service, string artifactIdentifier, ILogger logger)
+        public static IArtifact Volatile(ICatalogService service, string artifactIdentifier, ILogger logger)
         {
             return new CatalogArtifact(service, artifactIdentifier, logger);
         }

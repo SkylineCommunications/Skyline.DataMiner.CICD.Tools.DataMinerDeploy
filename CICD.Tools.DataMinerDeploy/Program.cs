@@ -44,21 +44,21 @@
             name: "--catalog-id",
             description: "The unique catalog artifact identifier. This is the catalog GUID of the item.")
             {
-                IsRequired = false // Make required in breaking change
+                IsRequired = true
             };
 
             var catalogVersion = new Option<string>(
             name: "--catalog-version",
             description: "The version of the catalog item you want to deploy.")
             {
-                IsRequired = false  // Make required in breaking change
+                IsRequired = true
             };
 
             var agentDestinationId = new Option<string>(
             name: "--agent-destination-id",
             description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL. This is required when the dm-catalog-token is an Organization Token.")
             {
-                IsRequired = false  // Make required in breaking change
+                IsRequired = true
             };
 
             var dmCatalogToken = new Option<string>(
@@ -73,7 +73,7 @@
             name: "--artifact-id",
             description: "The unique internal artifact identifier as returned from the CatalogUpload tool when performing a Volatile Upload.")
             {
-                IsRequired = false // Make required in breaking change
+                IsRequired = true
             };
 
             // For the new command to support Volatile Uploads (old API)
@@ -140,10 +140,9 @@
                 postAction
             };
 
-            var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent. Currently only supports private artifacts uploaded using a key from the organization.")
+            var fromCatalog = new Command("from-catalog", "Deploys a specific package from the cloud to a cloud-connected DataMiner Agent.")
             {
                 isDebug,
-                artifactId, // To be removed in breaking change
                 catalogId,
                 catalogVersion,
                 agentDestinationId,
@@ -164,7 +163,7 @@
             rootCommand.Add(fromCatalog);
             rootCommand.Add(fromVolatile);
 
-            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, catalogId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
+            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
             fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
             fromVolatile.SetHandler(ProcessVolatile, isDebug, artifactId, dmSystemAgentKey, deployTimeout);
 
@@ -329,18 +328,13 @@
             }
         }
 
-        private static async Task<int> ProcessCatalog(bool isDebug, string artifactId, string catalogId, string catalogVersion, string agentDestinationId, string dmCatalogToken, int deployTimeout)
+        private static async Task<int> ProcessCatalog(bool isDebug, string catalogId, string catalogVersion, string agentDestinationId, string dmCatalogToken, int deployTimeout)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:aaz4s555e74a55z7e4|Status:Fail-blabla"
-            string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{artifactId}";
+            string devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog:{catalogId}";
 
             // Can be removed in Breaking Change and just use provided arguments that are required.
-
-            #region ToBeRemoved
-            artifactId = ExtractArtifactId(artifactId);
-            if (String.IsNullOrWhiteSpace(catalogId)) catalogId = artifactId;
-            #endregion
 
             LoggerConfiguration logConfig = new LoggerConfiguration().WriteTo.Console();
             if (!isDebug)
@@ -365,45 +359,25 @@
 
                 if (String.IsNullOrWhiteSpace(dmCatalogToken))
                 {
-                    if (String.IsNullOrWhiteSpace(agentDestinationId))
+                    KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
                     {
-                        DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
-                        core.Warning("The subcommand 'from-catalog --artifact-id {upload result}' using the DataMiner System key is deprecated and must be replaced. Use either the new 'from-volatile' subcommand or 'from-catalog --catalog-id {catalog guid} --catalog-version {catalog version} --agent-destination-id {agent guid}' with the organization key instead. This change will be enforced in a major update of this tool on May 1, 2025.");
-                        devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog-legacy:{artifactId}";
-                        artifact = DeploymentFactory.Cloud(artifactId, logger);
-                    }
-                    else
-                    {
-                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
-                        {
-                            CatalogGuid = catalogId,
-                            CatalogVersion = catalogVersion,
-                            DestinationGuid = agentDestinationId,
-                        };
+                        CatalogGuid = catalogId,
+                        CatalogVersion = catalogVersion,
+                        DestinationGuid = agentDestinationId,
+                    };
 
-                        artifact = DeploymentFactory.Catalog(catId, logger);
-                    }
+                    artifact = DeploymentFactory.Catalog(catId, logger);
                 }
                 else
                 {
-                    if (String.IsNullOrWhiteSpace(agentDestinationId))
+                    KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
                     {
-                        DotnetActionsToolkit.Core core = new DotnetActionsToolkit.Core();
-                        core.Warning("The subcommand 'from-catalog --artifact-id {upload result}' using the DataMiner System key is deprecated and must be replaced. Use either the new 'from-volatile' subcommand or 'from-catalog --catalog-id {catalog guid} --catalog-version {catalog version} --agent-destination-id {agent guid}' with the organization key instead. This change will be enforced in a major update of this tool on May 1, 2025.");
-                        devopsMetricsMessage = $"Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-catalog-legacy:{artifactId}";
-                        artifact = DeploymentFactory.Cloud(artifactId, dmCatalogToken, logger);
-                    }
-                    else
-                    {
-                        KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
-                        {
-                            CatalogGuid = catalogId,
-                            CatalogVersion = catalogVersion,
-                            DestinationGuid = agentDestinationId,
-                        };
+                        CatalogGuid = catalogId,
+                        CatalogVersion = catalogVersion,
+                        DestinationGuid = agentDestinationId,
+                    };
 
-                        artifact = DeploymentFactory.Catalog(catId, dmCatalogToken, logger);
-                    }
+                    artifact = DeploymentFactory.Catalog(catId, dmCatalogToken, logger);
                 }
 
                 try
@@ -488,11 +462,11 @@
 
                 if (String.IsNullOrWhiteSpace(dmSystemAgentKey))
                 {
-                    artifact = DeploymentFactory.Cloud(artifactId, logger);
+                    artifact = DeploymentFactory.Volatile(artifactId, logger);
                 }
                 else
                 {
-                    artifact = DeploymentFactory.Cloud(artifactId, dmSystemAgentKey, logger);
+                    artifact = DeploymentFactory.Volatile(artifactId, dmSystemAgentKey, logger);
                 }
 
                 try
