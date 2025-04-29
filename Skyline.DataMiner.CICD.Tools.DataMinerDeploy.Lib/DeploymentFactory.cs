@@ -1,7 +1,5 @@
 ﻿namespace Skyline.DataMiner.CICD.Tools.DataMinerDeploy.Lib
 {
-    using System;
-
     using Microsoft.Extensions.Logging;
 
     using Skyline.DataMiner.CICD.FileSystem;

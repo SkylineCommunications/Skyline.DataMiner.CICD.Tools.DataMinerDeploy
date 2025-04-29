@@ -56,7 +56,7 @@
 
             var agentDestinationId = new Option<string>(
             name: "--agent-destination-id",
-            description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL. This is required when the dm-catalog-token is an Organization Token.")
+            description: "The destination agent ID to deploy to. To obtain this ID for an existing DataMiner System, navigate to its details page in the Admin app. The ID is the last GUID of the URL.")
             {
                 IsRequired = true
             };
@@ -163,7 +163,7 @@
             rootCommand.Add(fromCatalog);
             rootCommand.Add(fromVolatile);
 
-            fromCatalog.SetHandler(ProcessCatalog, isDebug, artifactId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
+            fromCatalog.SetHandler(ProcessCatalog, isDebug, catalogId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
             fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
             fromVolatile.SetHandler(ProcessVolatile, isDebug, artifactId, dmSystemAgentKey, deployTimeout);
 
@@ -357,26 +357,19 @@
             {
                 IArtifact artifact;
 
+                KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
+                {
+                    CatalogGuid = catalogId,
+                    CatalogVersion = catalogVersion,
+                    DestinationGuid = agentDestinationId,
+                };
+
                 if (String.IsNullOrWhiteSpace(dmCatalogToken))
                 {
-                    KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
-                    {
-                        CatalogGuid = catalogId,
-                        CatalogVersion = catalogVersion,
-                        DestinationGuid = agentDestinationId,
-                    };
-
                     artifact = DeploymentFactory.Catalog(catId, logger);
                 }
                 else
                 {
-                    KeyCatalogDeploymentIdentifier catId = new KeyCatalogDeploymentIdentifier
-                    {
-                        CatalogGuid = catalogId,
-                        CatalogVersion = catalogVersion,
-                        DestinationGuid = agentDestinationId,
-                    };
-
                     artifact = DeploymentFactory.Catalog(catId, dmCatalogToken, logger);
                 }
 
