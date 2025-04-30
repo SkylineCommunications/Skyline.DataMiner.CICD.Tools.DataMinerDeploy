@@ -16,8 +16,7 @@
         /// <param name="httpClient">An instance of <see cref="HttpClient"/> used for communication with the catalog.</param>
         /// <param name="logger">An instance of <see cref="ILogger"/> for handling debug and error logging.</param>
         /// <returns>An instance of <see cref="ICatalogService"/> to communicate with the Skyline DataMiner Catalog (https://catalog.dataminer.services/).</returns>
-        [Obsolete("This uses an obsolete deployment service in the backend. Recommended to use the KeyCatalogApi where possible for new deployments.")]
-        public static ICatalogService CreateWithHttp(HttpClient httpClient, ILogger logger)
+        public static ICatalogService CreateWithHttpForVolatile(HttpClient httpClient, ILogger logger)
         {
             var environment = Environment.GetEnvironmentVariable("Skyline-deploy-action-namespace");
 

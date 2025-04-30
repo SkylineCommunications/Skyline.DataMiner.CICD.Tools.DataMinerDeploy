@@ -65,7 +65,7 @@
             // Act
             Func<Task> deployAction = async () =>
             {
-                using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+                using (var artifact = DeploymentFactory.Volatile(fakeService.Object, "fakeId", logger))
                 {
                     var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
                 }
@@ -89,7 +89,7 @@
             // Act
             Func<Task> deployAction = async () =>
             {
-                using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger))
+                using (var artifact = DeploymentFactory.Volatile(fakeService.Object, "fakeId", fakeToken, logger))
                 {
                     var result = await artifact.DeployAsync(TimeSpan.FromSeconds(3));
                 }
@@ -113,7 +113,7 @@
             fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
             // Act
-            using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", fakeToken, logger))
+            using (var artifact = DeploymentFactory.Volatile(fakeService.Object, "fakeId", fakeToken, logger))
             {
                 var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
@@ -142,7 +142,7 @@
             fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
             // Act
-            using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+            using (var artifact = DeploymentFactory.Volatile(fakeService.Object, "fakeId", logger))
             {
                 var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
@@ -170,7 +170,7 @@
             fakeService.Setup(p => p.GetDeployedPackageAsync(deployingPackage, fakeToken)).ReturnsAsync(deployedPackage);
 
             // Act
-            using (var artifact = DeploymentFactory.Cloud(fakeService.Object, "fakeId", logger))
+            using (var artifact = DeploymentFactory.Volatile(fakeService.Object, "fakeId", logger))
             {
                 var result = await artifact.DeployAsync(TimeSpan.FromSeconds(10));
 
