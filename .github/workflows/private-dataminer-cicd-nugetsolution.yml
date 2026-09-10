@@ -12,8 +12,8 @@ on:
 
 jobs:
   CICD:
-    uses: SkylineCommunications/_ReusableWorkflows/.github/workflows/NuGet Solution Master Workflow.yml@main
+    uses: SkylineCommunications/_ReusableWorkflows/.github/workflows/Master Workflow.yml@main
     with:
-      sonarCloudProjectName: SkylineCommunications_Skyline.DataMiner.CICD.Tools.DataMinerDeploy
+      runs-on: windows-latest
     secrets:
-      nugetApiKey: ${{ secrets.NUGETAPIKEY }}
+      NUGET_API_KEY: ${{ secrets.NUGETAPIKEY }}

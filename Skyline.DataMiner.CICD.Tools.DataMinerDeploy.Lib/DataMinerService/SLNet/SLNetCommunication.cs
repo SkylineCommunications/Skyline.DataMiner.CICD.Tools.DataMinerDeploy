@@ -27,7 +27,7 @@
 
             try
             {
-                Connection = new GRPCConnection(hostname);
+                Connection = new GRPCConnection(hostname, ConnectionAttributes.NoProtoBufSerialization);
             }
             catch (Exception ex)
             {
@@ -37,6 +37,7 @@
                 throw new InvalidOperationException("Unable to reach DataMiner. Make sure that DataMiner and APIGateway are up and running and DataMiner has a minimum version of MR 10.3 / FR 10.3.2 ", ex);
             }
 
+            Connection.ClientApplicationName = "Skyline.DataMiner.CICD.Tools.DataMinerDeploy";
             Connection.PollingRequestTimeout = 120000;
             Connection.ConnectTimeoutTime = 120000;
             Connection.AuthenticateMessageTimeout = 120000;
