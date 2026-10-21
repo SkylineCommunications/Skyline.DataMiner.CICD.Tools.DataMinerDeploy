@@ -26,6 +26,8 @@
 	</ItemGroup>
 
 	<Target Name="BuildDeploymentFixture" BeforeTargets="DmappCreation" Condition="'$(GenerateDataMinerPackage)' == 'true'">
+		<!-- Git does not preserve the empty directories required by the package builder. -->
+		<MakeDir Directories="$(MSBuildProjectDirectory)\SetupContent;$(MSBuildProjectDirectory)\PackageContent\CompanionFiles;$(MSBuildProjectDirectory)\PackageContent\Dashboards;$(MSBuildProjectDirectory)\PackageContent\LowCodeApps" />
 		<MSBuild Projects="$(MSBuildProjectDirectory)\..\DataMinerDeploy.RegressionFixture\DataMinerDeploy.RegressionFixture.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration);Version=1.0.0;PackageVersion=1.0.0" />
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\..\DataMinerDeploy.RegressionFixture\bin\$(Configuration)\net48\DataMinerBuild\DataMinerDeploy.RegressionFixture.1.0.0.dmapp"
 		      DestinationFolder="$(MSBuildProjectDirectory)\TestPackageContent\TestHarvesting\postbuild.generated\Fixtures" />

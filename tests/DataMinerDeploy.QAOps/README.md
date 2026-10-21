@@ -18,7 +18,7 @@ dotnet build .\tests\DataMinerDeploy.QAOps\DataMinerDeploy.QAOps.csproj --config
 
 The SDK produces `bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.4.dmtest` under this project. The build also builds the integration tests and fixture, downloads the published deployment tool from NuGet.org, and verifies its SHA-256. No Catalog download key is needed because there are no external Catalog dependencies.
 
-CI builds with `GenerateDataMinerPackage=false` skip fixture packaging and harvesting. When CI overrides the test package version, the bundled fixture remains pinned to `1.0.0`.
+CI builds with `GenerateDataMinerPackage=false` skip fixture packaging and harvesting. When CI overrides the test package version, the bundled fixture remains pinned to `1.0.0`. Required empty SDK directories are created during packaging so fresh checkouts do not depend on untracked local folders.
 
 ## Run on QAOps
 
