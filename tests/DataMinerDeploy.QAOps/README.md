@@ -18,6 +18,8 @@ dotnet build .\tests\DataMinerDeploy.QAOps\DataMinerDeploy.QAOps.csproj --config
 
 The SDK produces `bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.4.dmtest` under this project. The build also builds the integration tests and fixture, downloads the published deployment tool from NuGet.org, and verifies its SHA-256. No Catalog download key is needed because there are no external Catalog dependencies.
 
+CI builds with `GenerateDataMinerPackage=false` skip fixture packaging and harvesting. When CI overrides the test package version, the bundled fixture remains pinned to `1.0.0`.
+
 ## Run on QAOps
 
 Install the `Skyline.DataMiner.QAOps` .NET tool if needed. Supply a short-lived QAOps token through `QAOPS_TOKEN`; never commit a token. The target receives its DataMiner credentials through the encrypted `QAOpsDataMinerUser` and `QAOpsDataMinerPassword` keys provided by QAOps.

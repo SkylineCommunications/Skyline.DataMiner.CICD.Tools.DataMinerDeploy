@@ -25,8 +25,8 @@
 		<ProjectReference Include="..\DataMinerDeploy.IntegrationTests\DataMinerDeploy.qaops.integrationtests.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
-	<Target Name="BuildDeploymentFixture" BeforeTargets="DmappCreation">
-		<MSBuild Projects="$(MSBuildProjectDirectory)\..\DataMinerDeploy.RegressionFixture\DataMinerDeploy.RegressionFixture.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration)" />
+	<Target Name="BuildDeploymentFixture" BeforeTargets="DmappCreation" Condition="'$(GenerateDataMinerPackage)' == 'true'">
+		<MSBuild Projects="$(MSBuildProjectDirectory)\..\DataMinerDeploy.RegressionFixture\DataMinerDeploy.RegressionFixture.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration);Version=1.0.0;PackageVersion=1.0.0" />
 		<Copy SourceFiles="$(MSBuildProjectDirectory)\..\DataMinerDeploy.RegressionFixture\bin\$(Configuration)\net48\DataMinerBuild\DataMinerDeploy.RegressionFixture.1.0.0.dmapp"
 		      DestinationFolder="$(MSBuildProjectDirectory)\TestPackageContent\TestHarvesting\postbuild.generated\Fixtures" />
 	</Target>
