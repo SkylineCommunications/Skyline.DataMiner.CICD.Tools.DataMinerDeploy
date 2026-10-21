@@ -3,10 +3,28 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Skyline.DataMiner.CICD.Tools.DataMinerDeploy;
+    using Skyline.DataMiner.Net.Messages;
+    using Skyline.DataMiner.Net.Serialization;
 
     [TestClass]
     public class ProgramTests
     {
+        [TestMethod]
+        public void SLNetMessage_BinarySerialization_RoundTripsOnNet10()
+        {
+            var message = new GetInfoMessage { Type = InfoType.DataMinerInfo };
+            var formatter = new SafeBinaryFormatter();
+            using var stream = new MemoryStream();
+
+            formatter.Serialize(stream, new DMSMessage[] { message });
+            stream.Position = 0;
+            var result = (DMSMessage[])formatter.Deserialize(stream);
+
+            Assert.AreEqual(1, result.Length);
+            Assert.IsInstanceOfType<GetInfoMessage>(result[0]);
+            Assert.AreEqual(message.Type, ((GetInfoMessage)result[0]).Type);
+        }
+
         [TestMethod]
         public void ExtractOldArtifactIdTest_withDebug_fromPowershell()
         {
