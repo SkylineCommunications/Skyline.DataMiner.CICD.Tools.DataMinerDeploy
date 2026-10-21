@@ -76,6 +76,10 @@ public sealed class DeploymentTests
         process.WaitForExit();
         writer.Flush();
         string diagnostics = output.ToString();
+        int failureIndex = diagnostics.IndexOf("DEPLOYMENT FAILURE:", StringComparison.Ordinal);
+        string failureDiagnostics = failureIndex < 0
+            ? diagnostics
+            : diagnostics.Substring(failureIndex) + "\nEarlier output:\n" + diagnostics.Substring(0, failureIndex);
         TestContext.WriteLine(diagnostics);
         foreach (string file in Directory.GetFiles(results))
         {
@@ -83,7 +87,7 @@ public sealed class DeploymentTests
         }
 
         Assert.IsTrue(exited, "Deployment PowerShell exceeded 25 minutes.\n" + diagnostics);
-        Assert.AreEqual(0, process.ExitCode, "Deployment failed.\n" + diagnostics);
+        Assert.AreEqual(0, process.ExitCode, "Deployment failed.\n" + failureDiagnostics);
         Assert.IsTrue(File.Exists(summary), "Deployment did not write its verified result.\n" + diagnostics);
     }
 

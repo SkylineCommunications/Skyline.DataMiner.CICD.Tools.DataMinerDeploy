@@ -90,8 +90,17 @@ try {
     Write-Host "Core services before deployment:"
     Get-Service -Name SLDataMiner, SLNet, SLDMS, SLWatchDog | Format-Table Name, Status | Out-String | Write-Host
     $existing = @(Get-FixtureScripts)
-    if ($existing.Count -ne 0) {
-        throw "Fixture already present; refusing to accept a stale installation or overwrite it: $($existing.FullName -join ', ')"
+    foreach ($script in $existing) {
+        if (-not (Get-Content -LiteralPath $script.FullName -Raw).Contains($config.FixtureMarker)) {
+            throw "Fixture name is occupied by an unrecognized script; refusing to remove it: $($script.FullName)"
+        }
+    }
+    foreach ($script in $existing) {
+        Remove-Item -LiteralPath $script.FullName -Force
+        Write-Host "Removed previous test-owned fixture '$($script.FullName)' before deployment."
+    }
+    if (@(Get-FixtureScripts).Count -ne 0) {
+        throw 'Fixture is still present before deployment; refusing a stale-payload result.'
     }
 
     $dotnet = Join-Path $env:ProgramW6432 'dotnet\dotnet.exe'

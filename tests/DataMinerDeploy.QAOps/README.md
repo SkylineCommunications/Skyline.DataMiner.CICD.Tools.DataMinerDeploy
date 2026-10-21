@@ -6,7 +6,7 @@
 
 ## Summary
 
-Builds a repeatable **DataMinerDeploy .NET 10 deployment regression** package for QAOps. It bundles a harmless script `.dmapp`, an MSTest wrapper, PowerShell, and the exact published **4.0.0-alpha1** tool package. The fixture is deliberately not installed by the test package: the deployment CLI must install it during the test.
+Builds a repeatable **DataMinerDeploy .NET 10 deployment regression** package for QAOps. It bundles a harmless script `.dmapp`, an MSTest wrapper, PowerShell, and the exact published **4.0.0-alpha1** tool package. The fixture is explicitly excluded from automatically installed script content, and QAOps runs this package in PowerShell-only mode: the deployment CLI must install the fixture during the test.
 
 ## Build
 
@@ -16,14 +16,14 @@ From the repository root on Windows, with .NET 10 SDK installed:
 dotnet build .\tests\DataMinerDeploy.QAOps\DataMinerDeploy.QAOps.csproj --configuration Release
 ```
 
-The SDK produces `bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.3.dmtest` under this project. The build also builds the integration tests and fixture, downloads the published deployment tool from NuGet.org, and verifies its SHA-256. No Catalog download key is needed because there are no external Catalog dependencies.
+The SDK produces `bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.4.dmtest` under this project. The build also builds the integration tests and fixture, downloads the published deployment tool from NuGet.org, and verifies its SHA-256. No Catalog download key is needed because there are no external Catalog dependencies.
 
 ## Run on QAOps
 
 Install the `Skyline.DataMiner.QAOps` .NET tool if needed. Supply a short-lived QAOps token through `QAOPS_TOKEN`; never commit a token. The target receives its DataMiner credentials through the encrypted `QAOpsDataMinerUser` and `QAOpsDataMinerPassword` keys provided by QAOps.
 
 ```powershell
-$package = Resolve-Path .\tests\DataMinerDeploy.QAOps\bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.3.dmtest
+$package = Resolve-Path .\tests\DataMinerDeploy.QAOps\bin\Release\net48\DataMinerBuild\DataMinerDeploy.QAOps.1.0.4.dmtest
 dataminer-qaops test-run-and-wait `
     -t 01KTRNHRHWQJ9SMESYJAFP8SE9 `
     -c 01KTRNTY3WW3JANCQ7WPWBEAVM `
@@ -50,7 +50,7 @@ Use distinct tags and result filenames for each run. Require the named `PowerShe
 
 The test installs the bundled tool into a private directory, installing an x64 .NET 10 SDK there if necessary. It invokes `from-artifact` against localhost with debug output and a 600-second deployment timeout. Success requires the expected installed script name and payload marker, plus running SLDataMiner, SLNet, SLDMS, and SLWatchDog services.
 
-The test refuses a pre-existing fixture and removes the script it successfully identifies after deployment. Use clean, disposable QAOps targets: failed partial installations and application installation records are not fully rolled back.
+Before deployment, the test removes leftover fixtures only when both their script name and versioned payload marker match this test; an unrecognized script occupying the name is rejected. It requires the fixture to be absent before invoking the CLI and removes the script it successfully identifies afterward. Use clean, disposable QAOps targets: failed partial installations and application installation records are not fully rolled back.
 
 `deployment-results` on the target contains redacted PowerShell output, deployment output, a verified `summary.json`, SLAutomation/SLNet log tails, and any newly modified upgrade progress logs found. Top-level diagnostic files are attached to the TRX. Failure assertion messages also include the captured output so the QAOps result is actionable without downloading attachments. An additional `DeploymentEvidence_DM_..._Tool_...` result records the actual Agent and tool versions.
 
