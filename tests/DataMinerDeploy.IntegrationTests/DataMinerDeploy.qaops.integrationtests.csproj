@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="Skyline.DataMiner.CICD.Tools.WinEncryptedKeys.Lib" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Invoke-DeploymentRegression.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="DeploymentRegression.psd1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="HarvestDeploymentTests" AfterTargets="Build">
+    <ItemGroup>
+      <TestOutput Include="$(OutputPath)**\*" Exclude="$(OutputPath)TestResults\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TestOutput)" DestinationFiles="@(TestOutput->'$(MSBuildProjectDirectory)\..\DataMinerDeploy.QAOps\TestPackageContent\TestHarvesting\postbuild.generated\Tests\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+</Project>
