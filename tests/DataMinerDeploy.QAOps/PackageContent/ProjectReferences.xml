@@ -1,0 +1,4 @@
+<ProjectReferences xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.skyline.be/projectReferences">
+	<!-- An empty list defaults to including sibling projects; explicitly exclude the deployment input. -->
+	<ProjectReference Exclude="..\DataMinerDeploy.RegressionFixture\DataMinerDeploy.RegressionFixture.csproj" />
+</ProjectReferences>
