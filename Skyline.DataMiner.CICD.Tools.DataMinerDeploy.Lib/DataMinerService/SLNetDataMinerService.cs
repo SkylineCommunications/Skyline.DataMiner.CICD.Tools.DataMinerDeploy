@@ -234,13 +234,31 @@
                 return false;
             }
 
+            ThrowIfLinux();
+
+            slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
+            return true;
+        }
+
+        public bool TryConnectWithWindowsAuthentication(string dmaIp)
+        {
+            if (slnet != null)
+            {
+                return false;
+            }
+
+            ThrowIfLinux();
+
+            slnet = SLNetCommunication.GetConnectionWithWindowsAuthentication(dmaIp);
+            return true;
+        }
+
+        private static void ThrowIfLinux()
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 throw new InvalidOperationException("Unsupported on Linux: Deployment of local artifacts. Please run this on a Windows system or use the deployment from catalog as an alternative.");
             }
-
-            slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
-            return true;
         }
 
         // To detect redundant calls

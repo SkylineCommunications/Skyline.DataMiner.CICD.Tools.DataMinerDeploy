@@ -148,5 +148,34 @@
         {
             return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, logger, fs);
         }
+
+        /// <summary>
+        /// A deployment using a local package to a local network connected DataMiner Agent, authenticating with the current Windows account (integrated security). Windows only.
+        /// </summary>
+        /// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.zip inside) will restart the agent.</remarks>
+        /// <param name="fs">An instance of <see cref="IFileSystem"/> used to access directories and files.</param>
+        /// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
+        /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
+        /// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
+        /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
+        public static IArtifact LocalWithWindowsAuthentication(IFileSystem fs, string pathToArtifact, ILogger logger, string dataMinerServerLocation)
+        {
+            return new LocalArtifact(DataMinerServiceFactory.CreateWithSLNet(fs, logger), pathToArtifact, dataMinerServerLocation, true, logger, fs);
+        }
+
+        /// <summary>
+        /// A deployment using a local package to a local network connected DataMiner Agent, authenticating with the current Windows account (integrated security). Windows only.
+        /// </summary>
+        /// <remarks>IMPORTANT: Deployment of a legacy style Application package (.dmapp that contains a Update.zip inside) will restart the agent.</remarks>
+        /// <param name="fs">An instance of <see cref="IFileSystem"/> used to access directories and files.</param>
+        /// <param name="dmService">An instance of <see cref="IDataMinerService"/> used for direct communication with a DataMiner.</param>
+        /// <param name="pathToArtifact">Path to the application package (.dmapp) or protocol package (.dmprotocol).</param>
+        /// <param name="logger">An instance of <see cref="ILogger"/> that will hold error, debug and other information.</param>
+        /// <param name="dataMinerServerLocation">The IP or host name of a DataMiner agent.</param>
+        /// <returns>An instance of <see cref="IArtifact"/> that allows deployment.</returns>
+        public static IArtifact LocalWithWindowsAuthentication(IFileSystem fs, IDataMinerService dmService, string pathToArtifact, ILogger logger, string dataMinerServerLocation)
+        {
+            return new LocalArtifact(dmService, pathToArtifact, dataMinerServerLocation, true, logger, fs);
+        }
     }
 }

@@ -121,6 +121,15 @@
                 IsRequired = false
             };
 
+            var useWindowsAuth = new Option<bool>(
+            name: "--use-windows-auth",
+            description: "Authenticates with the current Windows account (integrated security) instead of a DataMiner user name and password. Windows only. Cannot be combined with --dm-user or --dm-password.")
+            {
+                IsRequired = false
+            };
+
+            useWindowsAuth.SetDefaultValue(false);
+
             var postAction = new Option<PostActionsInputArgument>("--post-action")
             {
                 Description = "Specify the post-action to perform. This only works for protocol packages (.dmprotocol).",
@@ -136,6 +145,7 @@
                 dataMinerServerLocation,
                 dataminerUser,
                 dataminerPassword,
+                useWindowsAuth,
                 deployTimeout,
                 postAction
             };
@@ -164,7 +174,7 @@
             rootCommand.Add(fromVolatile);
 
             fromCatalog.SetHandler(ProcessCatalog, isDebug, catalogId, catalogVersion, agentDestinationId, dmCatalogToken, deployTimeout);
-            fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, deployTimeout, postAction);
+            fromArtifact.SetHandler(ProcessArtifact, isDebug, pathToArtifact, dataMinerServerLocation, dataminerUser, dataminerPassword, useWindowsAuth, deployTimeout, postAction);
             fromVolatile.SetHandler(ProcessVolatile, isDebug, artifactId, dmSystemAgentKey, deployTimeout);
 
             // dataminer-package-deploy
@@ -221,7 +231,7 @@
             return cleanArtifactId;
         }
 
-        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, int deployTimeout, PostActionsInputArgument actions)
+        private static async Task<int> ProcessArtifact(bool isDebug, string pathToArtifact, string dataMinerServerLocation, string dataminerUser, string dataminerPassword, bool useWindowsAuth, int deployTimeout, PostActionsInputArgument actions)
         {
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:OK"
             // Skyline.DataMiner.CICD.Tools.DataMinerDeploy|from-artifact|Status:Fail-blabla"
@@ -248,7 +258,19 @@
             {
                 IArtifact artifact;
 
-                if (String.IsNullOrWhiteSpace(dataminerPassword))
+                if (useWindowsAuth)
+                {
+                    if (!String.IsNullOrWhiteSpace(dataminerUser) || !String.IsNullOrWhiteSpace(dataminerPassword))
+                    {
+                        const string errorMessage = "--use-windows-auth cannot be combined with --dm-user or --dm-password.";
+                        devopsMetricsMessage += "|Status:Fail-" + errorMessage;
+                        logger.LogCritical(errorMessage);
+                        return 1;
+                    }
+
+                    artifact = DeploymentFactory.LocalWithWindowsAuthentication(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation);
+                }
+                else if (String.IsNullOrWhiteSpace(dataminerPassword))
                 {
                     artifact = DeploymentFactory.Local(FileSystem.FileSystem.Instance, pathToArtifact, logger, dataMinerServerLocation);
                 }
