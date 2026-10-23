@@ -251,5 +251,60 @@
             var setToProduction = (false, false);
             fakeService.Verify(p => p.InstallDataMinerProtocol(pathToArtifact, setToProduction));
         }
+
+        [TestMethod]
+        public async Task DeploymentFactory_LocalWithWindowsAuthentication_IgnoresEnvCredentials()
+        {
+            // Arrange
+            Mock<IFileSystem> fs = new Mock<IFileSystem>();
+            Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+            Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
+            string pathToArtifact = "TestData/TestNewDmapp.dmapp";
+            string dmServerLocation = "fake.host.server";
+
+            fs.Setup(p => p.File).Returns(fakeFile.Object);
+            fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+
+            Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_USER", "fakeUserFromEnv");
+            Environment.SetEnvironmentVariable("DATAMINER_DEPLOY_PASSWORD", "fakePasswordFromEnv");
+
+            // Act
+            var artifact = DeploymentFactory.LocalWithWindowsAuthentication(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation);
+            var result = await artifact.DeployAsync(TimeSpan.FromSeconds(5));
+
+            // Assert
+            result.Should().BeTrue();
+            fakeService.Verify(p => p.TryConnectWithWindowsAuthentication(dmServerLocation), Times.Once);
+            fakeService.Verify(p => p.TryConnect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
+        }
+
+        [TestMethod]
+        public async Task DeploymentFactory_LocalWithWindowsAuthentication_RejectedAccount_ThrowsClearMessage()
+        {
+            // Arrange
+            Mock<IFileSystem> fs = new Mock<IFileSystem>();
+            Mock<IFileIO> fakeFile = new Mock<IFileIO>();
+            Mock<IDataMinerService> fakeService = new Mock<IDataMinerService>();
+
+            string pathToArtifact = "TestData/TestNewDmapp.dmapp";
+            string dmServerLocation = "fake.host.server";
+
+            fs.Setup(p => p.File).Returns(fakeFile.Object);
+            fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
+            fakeService.Setup(p => p.TryConnectWithWindowsAuthentication(dmServerLocation)).Throws(new Exception("Access denied."));
+
+            // Act
+            Func<Task> deployAction = async () =>
+            {
+                var artifact = DeploymentFactory.LocalWithWindowsAuthentication(fs.Object, fakeService.Object, pathToArtifact, logger, dmServerLocation);
+                await artifact.DeployAsync(TimeSpan.FromSeconds(5));
+            };
+
+            // Assert
+            await deployAction.Should().ThrowAsync<InvalidOperationException>().WithMessage($"*{Environment.UserName}*Access denied.*--dm-user/--dm-password*");
+            fakeService.Verify(p => p.InstallNewStyleAppPackages(It.IsAny<string>()), Times.Never);
+        }
     }
 }

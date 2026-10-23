@@ -23,6 +23,7 @@
         private readonly ILogger logger;
         private readonly string pathToArtifact;
         private readonly IDataMinerService service;
+        private readonly bool useWindowsAuthentication;
         private bool disposedValue;
         private PostDeployActions postDeployActions;
         private string pwFromEnv;
@@ -30,6 +31,16 @@
         private string userFromEnv;
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, ILogger logger, IFileSystem fs)
+            : this(dataMinerService, pathToArtifact, dataMinerServerLocation, dataMinerUser, dataMinerPassword, false, logger, fs)
+        {
+        }
+
+        public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, bool useWindowsAuthentication, ILogger logger, IFileSystem fs)
+            : this(dataMinerService, pathToArtifact, dataMinerServerLocation, null, null, useWindowsAuthentication, logger, fs)
+        {
+        }
+
+        private LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, string dataMinerUser, string dataMinerPassword, bool useWindowsAuthentication, ILogger logger, IFileSystem fs)
         {
             if (String.IsNullOrWhiteSpace(pathToArtifact))
             {
@@ -42,8 +53,13 @@
             this.dataMinerServerLocation = dataMinerServerLocation;
             dataminerUser = dataMinerUser;
             dataminerPassword = dataMinerPassword;
+            this.useWindowsAuthentication = useWindowsAuthentication;
             this.logger = logger;
-            TryFindEnvironmentKeys();
+
+            if (!useWindowsAuthentication)
+            {
+                TryFindEnvironmentKeys();
+            }
         }
 
         public LocalArtifact(IDataMinerService dataMinerService, string pathToArtifact, string dataMinerServerLocation, ILogger logger, IFileSystem fs) : this(dataMinerService, pathToArtifact, dataMinerServerLocation, null, null, logger, fs)
@@ -82,35 +98,15 @@
                     throw new InvalidOperationException($"Unable to deploy, path does not exist: {pathToArtifact}");
                 }
 
-                string actualUser;
-                string actualPassword;
-                if (!String.IsNullOrWhiteSpace(dataminerUser))
+                if (useWindowsAuthentication)
                 {
-                    actualUser = dataminerUser;
-                    logger.LogDebug("User provided through arguments, this takes precedence over environment variables.");
+                    ConnectWithWindowsAccount();
                 }
                 else
                 {
-                    actualUser = userFromEnv;
+                    ConnectWithCredentials();
                 }
 
-                if (!String.IsNullOrWhiteSpace(dataminerPassword))
-                {
-                    actualPassword = dataminerPassword;
-                    logger.LogDebug("Password provided through arguments, this takes precedence over environment variables.");
-                }
-                else
-                {
-                    actualPassword = pwFromEnv;
-                }
-
-                if (String.IsNullOrEmpty(actualUser) || String.IsNullOrEmpty(actualPassword))
-                {
-                    throw new InvalidOperationException("Username or password is empty. Expected credentials either provided through arguments or with Environment Variables DATAMINER_DEPLOY_USER_ENCRYPTED/DATAMINER_DEPLOY_PASSWORD_ENCRYPTED or DATAMINER_DEPLOY_USER/DATAMINER_DEPLOY_PASSWORD.");
-                }
-
-                logger.LogDebug($"Setting up connection to {dataMinerServerLocation}...");
-                service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
                 logger.LogDebug($"Connection established.");
                 ArtifactType type = new ArtifactType(fs, pathToArtifact);
 
@@ -163,6 +159,56 @@
                 }
 
                 disposedValue = true;
+            }
+        }
+
+        private void ConnectWithCredentials()
+        {
+            string actualUser;
+            string actualPassword;
+            if (!String.IsNullOrWhiteSpace(dataminerUser))
+            {
+                actualUser = dataminerUser;
+                logger.LogDebug("User provided through arguments, this takes precedence over environment variables.");
+            }
+            else
+            {
+                actualUser = userFromEnv;
+            }
+
+            if (!String.IsNullOrWhiteSpace(dataminerPassword))
+            {
+                actualPassword = dataminerPassword;
+                logger.LogDebug("Password provided through arguments, this takes precedence over environment variables.");
+            }
+            else
+            {
+                actualPassword = pwFromEnv;
+            }
+
+            if (String.IsNullOrEmpty(actualUser) || String.IsNullOrEmpty(actualPassword))
+            {
+                throw new InvalidOperationException("Username or password is empty. Expected credentials either provided through arguments or with Environment Variables DATAMINER_DEPLOY_USER_ENCRYPTED/DATAMINER_DEPLOY_PASSWORD_ENCRYPTED or DATAMINER_DEPLOY_USER/DATAMINER_DEPLOY_PASSWORD.");
+            }
+
+            logger.LogDebug($"Setting up connection to {dataMinerServerLocation}...");
+            service.TryConnect(dataMinerServerLocation, actualUser, actualPassword);
+        }
+
+        private void ConnectWithWindowsAccount()
+        {
+            string windowsIdentity = $"{Environment.UserDomainName}\\{Environment.UserName}";
+
+            logger.LogDebug("Windows authentication requested, credentials from DATAMINER_DEPLOY_* environment variables are ignored.");
+            logger.LogInformation($"Using the current Windows account ({windowsIdentity}) to connect to {dataMinerServerLocation}.");
+
+            try
+            {
+                service.TryConnectWithWindowsAuthentication(dataMinerServerLocation);
+            }
+            catch (Exception ex) when (!(ex is InvalidOperationException))
+            {
+                throw new InvalidOperationException($"Unable to authenticate on {dataMinerServerLocation} with the current Windows account ({windowsIdentity}): {ex.Message} Make sure this Windows account is known to the DataMiner System (the built-in 'Administrator' account is not allowed), or provide a DataMiner user name and password instead (--dm-user/--dm-password).", ex);
             }
         }
 
