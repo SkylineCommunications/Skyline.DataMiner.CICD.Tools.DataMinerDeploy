@@ -32,8 +32,8 @@
         /// Try to connect to a DataMiner Agent using the host name or IP address. This should be called before attempting an installation.
         /// </summary>
         /// <param name="dmaIp">The host name or IP address of the DataMiner Agent.</param>
-        /// <param name="dmaUser">The name of a DataMiner user for authentication.</param>
-        /// <param name="dmaPass">The password of a DataMiner user for authentication.</param>
+        /// <param name="dmaUser">The name of a DataMiner user for authentication, or empty to authenticate with the current Windows account.</param>
+        /// <param name="dmaPass">The password of a DataMiner user for authentication, or empty to authenticate with the current Windows account.</param>
         /// <returns><c>true</c> if the connection was successfully established; otherwise, <c>false</c>.</returns>
         bool TryConnect(string dmaIp, string dmaUser, string dmaPass);
     }

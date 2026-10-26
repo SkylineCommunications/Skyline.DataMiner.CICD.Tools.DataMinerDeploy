@@ -208,6 +208,16 @@ WinEncryptedKeys --name "DATAMINER_DEPLOY_PASSWORD_ENCRYPTED" --value "MyPasswor
 You can review and make suggestions to the sourcecode of this encryption tool here: 
 https://github.com/SkylineCommunications/Skyline.DataMiner.CICD.Tools.WinEncryptedKeys
 
+### Windows Authentication
+
+On Windows, you can authenticate with the current Windows account (integrated security) instead of a DataMiner user name and password by adding '--use-windows-auth'. The Windows account must be known to the DataMiner System; the built-in 'Administrator' account is refused by DataMiner.
+
+```console
+dataminer-package-deploy from-artifact --path-to-artifact "" --dm-server-location "" --use-windows-auth
+```
+
+This option cannot be combined with '--dm-user' or '--dm-password'. Credentials stored in the DATAMINER_DEPLOY_* environment variables are ignored.
+
 ### Post Actions
 
 It's possible to define a '--post-action' argument, this is an action to be executed after initial deployment.

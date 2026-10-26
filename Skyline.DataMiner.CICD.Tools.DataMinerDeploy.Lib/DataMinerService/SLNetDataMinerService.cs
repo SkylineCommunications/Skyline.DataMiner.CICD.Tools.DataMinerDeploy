@@ -239,7 +239,15 @@
                 throw new InvalidOperationException("Unsupported on Linux: Deployment of local artifacts. Please run this on a Windows system or use the deployment from catalog as an alternative.");
             }
 
-            slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
+            if (String.IsNullOrEmpty(dmaUser) && String.IsNullOrEmpty(dmaPass))
+            {
+                slnet = SLNetCommunication.GetConnectionWithWindowsAuthentication(dmaIp);
+            }
+            else
+            {
+                slnet = SLNetCommunication.GetConnection(dmaIp, dmaUser, dmaPass);
+            }
+
             return true;
         }
 

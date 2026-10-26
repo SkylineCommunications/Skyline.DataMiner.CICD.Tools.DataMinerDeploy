@@ -9,7 +9,7 @@
 
     internal sealed class SLNetCommunication : IDisposable
     {
-        private SLNetCommunication(string hostname, string username, string password)
+        private SLNetCommunication(string hostname, string username, string password, bool useWindowsAuthentication)
         {
             if (hostname.Contains(".dataminer.services"))
             {
@@ -41,7 +41,15 @@
             Connection.PollingRequestTimeout = 120000;
             Connection.ConnectTimeoutTime = 120000;
             Connection.AuthenticateMessageTimeout = 120000;
-            Connection.Authenticate(username, password);
+
+            if (useWindowsAuthentication)
+            {
+                Connection.Authenticate();
+            }
+            else
+            {
+                Connection.Authenticate(username, password);
+            }
 
             // Required to allow async slnet calls that we need for installing.
             Connection.Subscribe(new SubscriptionFilter());
@@ -55,7 +63,12 @@
 
         public static SLNetCommunication GetConnection(string endUrlPoint, string username, string password)
         {
-            return new SLNetCommunication(endUrlPoint, username, password);
+            return new SLNetCommunication(endUrlPoint, username, password, false);
+        }
+
+        public static SLNetCommunication GetConnectionWithWindowsAuthentication(string endUrlPoint)
+        {
+            return new SLNetCommunication(endUrlPoint, null, null, true);
         }
 
         public void Dispose()
