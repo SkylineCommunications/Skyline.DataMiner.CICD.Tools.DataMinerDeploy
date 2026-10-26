@@ -275,8 +275,7 @@
 
             // Assert
             result.Should().BeTrue();
-            fakeService.Verify(p => p.TryConnectWithWindowsAuthentication(dmServerLocation), Times.Once);
-            fakeService.Verify(p => p.TryConnect(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            fakeService.Verify(p => p.TryConnect(dmServerLocation, String.Empty, String.Empty), Times.Once);
             fakeService.Verify(p => p.InstallNewStyleAppPackages(pathToArtifact));
         }
 
@@ -293,7 +292,7 @@
 
             fs.Setup(p => p.File).Returns(fakeFile.Object);
             fakeFile.Setup(p => p.Exists(pathToArtifact)).Returns(true);
-            fakeService.Setup(p => p.TryConnectWithWindowsAuthentication(dmServerLocation)).Throws(new Exception("Access denied."));
+            fakeService.Setup(p => p.TryConnect(dmServerLocation, String.Empty, String.Empty)).Throws(new Exception("Access denied."));
 
             // Act
             Func<Task> deployAction = async () =>

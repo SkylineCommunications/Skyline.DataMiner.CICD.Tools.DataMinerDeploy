@@ -204,7 +204,7 @@
 
             try
             {
-                service.TryConnectWithWindowsAuthentication(dataMinerServerLocation);
+                service.TryConnect(dataMinerServerLocation, String.Empty, String.Empty);
             }
             catch (Exception ex) when (!(ex is InvalidOperationException))
             {
